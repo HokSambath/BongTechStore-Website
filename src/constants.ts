@@ -73,6 +73,16 @@ export const PRODUCTS: Product[] = [
 
 export const BLOG_POSTS: BlogPost[] = [
   {
+    id: '3',
+    title: 'One x Player 2 Gaming ចលត័ ងាយយកតាមខ្លួន',
+    excerpt: 'ផលិតផល Gaming handheld ដែលមានតម្លៃធូរកាលមុន ឥឡូវឡើងថ្លៃហើយ!',
+    date: 'April 19, 2024',
+    image: 'https://img.youtube.com/vi/TAI_3NY-wNw/maxresdefault.jpg',
+    author: 'Bong Tech Team',
+    category: 'YouTube',
+    videoUrl: 'https://www.youtube.com/embed/TAI_3NY-wNw',
+  },
+  {
     id: '1',
     title: 'Top 5 Controllers for Mobile Gaming in 2024',
     excerpt: 'Mobile gaming has come a long way. Discover the best controllers that will elevate your experience on Android and iOS.',

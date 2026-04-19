@@ -1,13 +1,13 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, NavLink } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 import Hero from './components/Hero';
 import ProductGrid from './components/ProductGrid';
 import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from './contexts/LanguageContext';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -104,6 +104,67 @@ function CategoryPage({ title, category, subtitle }: { title: string, category: 
   );
 }
 
+function AboutPage() {
+  const { t } = useLanguage();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="pt-32 pb-20 min-h-screen section-container"
+    >
+      <div className="max-w-3xl mx-auto glass-card p-10 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" />
+        <h1 className="text-4xl font-bold mb-8 text-gradient uppercase tracking-tight">{t('nav.about')}</h1>
+        
+        <div className="space-y-6 text-text-dim text-lg leading-relaxed">
+          <p>
+            BongTech Store is a premier gaming lifestyle destination based in the heart of Phnom Penh, Cambodia. 
+            Founded by a passionate tech enthusiast and digital marketing expert, we specialize in sourcing 
+            high-quality, innovative, and retro-inspired gaming hardware.
+          </p>
+          <p>
+            We don't just sell products; we curate experiences. From the latest Hall Effect mini-controllers 
+            to classic handheld accessories, we bridge the gap between nostalgia and modern performance. 
+            Whether you are a mobile gamer, a Nintendo Switch fan, or a retro-emulator enthusiast, 
+            BongTech is your trusted local partner for gear that levels up your game.
+          </p>
+        </div>
+
+        <div className="mt-12 pt-10 border-t border-border space-y-4">
+          <h2 className="text-xl font-bold text-white mb-6 uppercase tracking-widest text-brand-primary">Contact & Social</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <a href="https://www.bongtech.cc/" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-text-dim hover:text-brand-primary transition-colors">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">🌐</span>
+              www.bongtech.cc
+            </a>
+            <a href="https://www.youtube.com/@BWinTech" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-text-dim hover:text-brand-primary transition-colors">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">📺</span>
+              Youtube: @BWinTech
+            </a>
+            <a href="https://www.facebook.com/bongtechstore" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-text-dim hover:text-brand-primary transition-colors">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">FB</span>
+              Facebook: bongtechstore
+            </a>
+            <a href="https://t.me/bongtechstore" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-text-dim hover:text-brand-primary transition-colors">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">TG</span>
+              Telegram Channel
+            </a>
+            <div className="flex items-center gap-3 text-text-dim">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">📍</span>
+              Phnom Penh, Cambodia
+            </div>
+            <div className="flex items-center gap-3 text-text-dim">
+              <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">📞</span>
+              070 697 169 / 070 555882
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
@@ -115,17 +176,20 @@ export default function App() {
         <ScrollToTop />
         <div className="min-h-screen flex flex-col Selection:bg-brand-primary Selection:text-white">
           <Navbar />
-          <main className="flex-grow">
-            <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/product" element={<CategoryPage title="nav.accessories" subtitle="grid.accessories_sub" category="Product" />} />
-                <Route path="/blog" element={<div className="pt-32"><BlogSection /></div>} />
-              </Routes>
-            </AnimatePresence>
-          </main>
-          <Footer />
-          <SpeedInsights />
+          <Sidebar />
+          <div className="flex-grow lg:pl-64 flex flex-col transition-all duration-300">
+            <main className="flex-grow">
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/product" element={<CategoryPage title="nav.product" subtitle="grid.accessories_sub" category="Product" />} />
+                  <Route path="/blog" element={<div className="pt-32"><BlogSection /></div>} />
+                  <Route path="/about" element={<AboutPage />} />
+                </Routes>
+              </AnimatePresence>
+            </main>
+            <Footer />
+          </div>
         </div>
       </Router>
     </LanguageProvider>

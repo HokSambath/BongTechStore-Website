@@ -15,7 +15,9 @@ import { Globe } from 'lucide-react';
 
 const navLinks = [
   { name: 'nav.home', path: '/' },
-  { name: 'nav.accessories', path: '/product' },
+  { name: 'nav.product', path: '/product' },
+  { name: 'nav.blog', path: '/blog' },
+  { name: 'nav.about', path: '/about' },
 ];
 
 export default function Navbar() {
@@ -42,8 +44,8 @@ export default function Navbar() {
             </NavLink>
           </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Desktop Nav - Hidden on very large screens where sidebar is active */}
+          <div className="hidden md:flex lg:hidden items-center space-x-6">
             {navLinks.map((link) => (
               <NavLink
                 key={link.name}

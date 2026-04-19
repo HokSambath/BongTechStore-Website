@@ -23,6 +23,17 @@ export default function BlogSection() {
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest">{post.category}</span>
             </div>
+            {post.videoUrl && (
+              <div className="relative aspect-video mb-3 rounded-lg overflow-hidden border border-border">
+                <iframe
+                  src={post.videoUrl}
+                  title={post.title}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
             <h3 className="text-sm font-bold mb-1.5 leading-snug group-hover:text-brand-primary transition-colors">
               {post.title}
             </h3>

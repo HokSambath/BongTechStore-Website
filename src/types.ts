@@ -19,4 +19,5 @@ export interface BlogPost {
   image: string;
   author: string;
   category: string;
+  videoUrl?: string;
 }
