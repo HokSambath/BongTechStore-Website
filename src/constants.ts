@@ -7,7 +7,7 @@ export const BUSINESS_DETAILS = {
   telegram: 'https://t.me/bongtechstore',
   phone: ['070 697 169', '070 555882'],
   website: 'www.bongtech.cc',
-  logo: 'https://drive.google.com/uc?export=view&id=19uBvaGQECOb_wQvcYsVx85oq0lb0RPZU',
+  logo: 'https://scontent.fpnh5-5.fna.fbcdn.net/v/t39.30808-6/501750660_122112868688871933_1028924135060599282_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=8y83nQMGTzMQ7kNvwHJpRCZ&_nc_oc=AdqD0vLI0mutK7Miskp61Hnhf276WelZ0yvi_R8XQlTgQmFuxFiDpWhSfQ3L5rpwX28&_nc_zt=23&_nc_ht=scontent.fpnh5-5.fna&_nc_gid=OMhkKSSjZ2U0XfYDq7eaSw&_nc_ss=7a3a8&oh=00_Af2t7qQjaUkF4VZ5cvFrZN1SLweeVAWLZDepjFFzgvIivg&oe=69EA9AA2',
   description: 'Bongtech store is your one-stop shop for all your gaming needs. We offer a wide range of controllers, accessories, and more. Shop now!',
 };
 
