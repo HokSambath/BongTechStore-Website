@@ -15,8 +15,7 @@ import { Globe } from 'lucide-react';
 
 const navLinks = [
   { name: 'nav.home', path: '/' },
-  { name: 'nav.device', path: '/device' },
-  { name: 'nav.accessories', path: '/accessories' },
+  { name: 'nav.accessories', path: '/product' },
 ];
 
 export default function Navbar() {
@@ -31,7 +30,7 @@ export default function Navbar() {
             <NavLink to="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded bg-bg-card flex items-center justify-center overflow-hidden border border-border shadow-accent transition-transform hover:scale-110">
                 <img 
-                  src="input_file_0.png" 
+                  src={BUSINESS_DETAILS.logo} 
                   alt="Bong Tech Logo" 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"

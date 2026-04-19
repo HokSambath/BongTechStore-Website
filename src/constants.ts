@@ -6,8 +6,8 @@ export const BUSINESS_DETAILS = {
   facebook: 'https://www.facebook.com/bongtechstore',
   telegram: 'https://t.me/bongtechstore',
   phone: ['070 697 169', '070 555882'],
-  website: 'bongtech.com',
-  logo: 'input_file_0.png',
+  website: 'www.bongtech.cc',
+  logo: 'https://drive.google.com/uc?export=view&id=19uBvaGQECOb_wQvcYsVx85oq0lb0RPZU',
   description: 'Bongtech store is your one-stop shop for all your gaming needs. We offer a wide range of controllers, accessories, and more. Shop now!',
 };
 
@@ -15,7 +15,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'iine-mini-retro',
     name: 'IINE Mini Retro Wireless Controller',
-    category: 'Accessories',
+    category: 'Product',
     price: '$15.00',
     colors: ['Blue', 'Black', 'Purple'],
     image: 'https://m.media-amazon.com/images/I/71hpLsW34SL._AC_UF1000,1000_QL80_.jpg',
@@ -35,7 +35,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'iine-retro-pocket',
     name: 'IINE Retro Pocket Game Controller',
-    category: 'Accessories',
+    category: 'Product',
     price: '$30.00',
     colors: ['White Blue'],
     image: 'https://m.media-amazon.com/images/I/61pWnL+uysL._AC_UF1000,1000_QL80_.jpg',
@@ -54,7 +54,7 @@ export const PRODUCTS: Product[] = [
   {
     id: 'iine-mini-retro-ananke-2',
     name: 'IINE MINI Retro Ananke 2',
-    category: 'Accessories',
+    category: 'Product',
     price: '$18.00',
     colors: ['Black', 'White'],
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxNJcJRVSTlDMbTi4x03c8k6VNXpYecBqfqQ&s',
@@ -68,38 +68,6 @@ export const PRODUCTS: Product[] = [
       'Power Source': 'Battery Powered',
     },
     description: 'Compact retro-style controller with specialized Ananke 2 design for versatile compatibility across platforms.',
-  },
-  {
-    id: 'laptop-rog-strix',
-    name: 'ASUS ROG Strix G16',
-    category: 'Device',
-    price: '$1,299.00',
-    colors: ['Eclipse Gray'],
-    image: 'https://picsum.photos/seed/rog-laptop/800/600',
-    specs: {
-      'CPU': 'Intel Core i7-13650HX',
-      'GPU': 'RTX 4060 8GB',
-      'RAM': '16GB DDR5',
-      'Storage': '512GB NVMe SSD',
-      'Display': '16" QHD+ 240Hz',
-    },
-    description: 'High-performance gaming laptop with cutting-edge cooling and display technology.',
-  },
-  {
-    id: 'smartphone-s24-ultra',
-    name: 'Samsung Galaxy S24 Ultra',
-    category: 'Smartphone',
-    price: '$1,199.00',
-    colors: ['Titanium Gray', 'Titanium Black'],
-    image: 'https://picsum.photos/seed/s24-ultra/800/600',
-    specs: {
-      'CPU': 'Snapdragon 8 Gen 3',
-      'RAM': '12GB',
-      'Storage': '256GB/512GB/1TB',
-      'Camera': '200MP Main + 50MP Periscope',
-      'Battery': '5000mAh',
-    },
-    description: 'The ultimate smartphone experience with AI-powered features and a stunning camera.',
   },
 ];
 

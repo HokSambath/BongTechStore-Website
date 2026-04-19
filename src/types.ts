@@ -1,7 +1,7 @@
 export interface Product {
   id: string;
   name: string;
-  category: 'Device' | 'Gaming PC' | 'Accessories' | 'Smartphone';
+  category: 'Device' | 'Gaming PC' | 'Accessories' | 'Smartphone' | 'Product';
   price: string;
   colors: string[];
   image: string;

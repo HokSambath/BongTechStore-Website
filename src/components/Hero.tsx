@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Zap } from 'lucide-react';
+import { BUSINESS_DETAILS } from '../constants';
 
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -43,14 +44,26 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative hidden lg:flex justify-center items-center"
+          className="relative hidden lg:flex justify-center items-center h-full"
         >
-          <div className="absolute w-[400px] h-[280px] bg-brand-primary/20 blur-[60px] rounded-full" />
-          <div className="relative w-[300px] h-[180px] bg-bg-card border-2 border-brand-primary rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center p-6 gap-4">
-            <div className="w-16 h-16 opacity-80 group-hover:scale-110 transition-transform">
-              <img src="input_file_0.png" alt="Bong Tech" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+          <div className="absolute w-[450px] h-[300px] bg-brand-primary/10 blur-[80px] rounded-full" />
+          <div className="relative w-full h-[320px] rounded-3xl overflow-hidden border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.4)] group">
+            <img 
+              src="https://m.media-amazon.com/images/I/61YRs2JtTjL.jpg" 
+              alt="Bong Tech Featured" 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-6 left-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded bg-white/10 backdrop-blur-md p-1.5 border border-white/20">
+                <img src={BUSINESS_DETAILS.logo} alt="Logo" className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+              </div>
+              <div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-white/50">{t('hero.hardware')}</div>
+                <div className="text-sm font-bold text-white uppercase">{BUSINESS_DETAILS.name}</div>
+              </div>
             </div>
-            <div className="text-[12px] font-mono font-bold text-brand-primary tracking-widest uppercase">{t('hero.hardware')}</div>
           </div>
         </motion.div>
       </div>

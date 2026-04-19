@@ -24,7 +24,7 @@ function Marquee() {
           <div key={i} className="flex items-center gap-8 mx-4">
             <span className="text-sm font-bold uppercase tracking-tighter text-black">🔥 Summer Deals in Phnom Penh</span>
             <span className="text-sm font-bold uppercase tracking-tighter text-black">⭐ New IINE Controllers In Stock</span>
-            <span className="text-sm font-bold uppercase tracking-tighter text-black">🚚 Fast Delivery Cambodia-wide</span>
+            <span className="text-sm font-bold uppercase tracking-tighter text-black">🚚 Free Delivery in Phnom Penh</span>
             <span className="text-sm font-bold uppercase tracking-tighter text-black">💻 Build Your Dream PC Today</span>
           </div>
         ))}
@@ -55,7 +55,7 @@ function HomePage() {
           <ProductGrid 
             title="grid.accessories" 
             subtitle="grid.accessories_sub"
-            category="Accessories"
+            category="Product"
           />
         </div>
         
@@ -116,8 +116,7 @@ export default function App() {
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/device" element={<CategoryPage title="nav.device" subtitle="grid.featured_sub" category="Device" />} />
-                <Route path="/accessories" element={<CategoryPage title="nav.accessories" subtitle="grid.accessories_sub" category="Accessories" />} />
+                <Route path="/product" element={<CategoryPage title="nav.accessories" subtitle="grid.accessories_sub" category="Product" />} />
                 <Route path="/blog" element={<div className="pt-32"><BlogSection /></div>} />
               </Routes>
             </AnimatePresence>
