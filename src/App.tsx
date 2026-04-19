@@ -104,11 +104,13 @@ function CategoryPage({ title, category, subtitle }: { title: string, category: 
 }
 
 import { LanguageProvider } from './contexts/LanguageContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   return (
     <LanguageProvider>
       <Router>
+        <SpeedInsights />
         <ScrollToTop />
         <div className="min-h-screen flex flex-col Selection:bg-brand-primary Selection:text-white">
           <Navbar />
