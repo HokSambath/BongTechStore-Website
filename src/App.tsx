@@ -7,6 +7,7 @@ import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from './contexts/LanguageContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function ScrollToTop() {
@@ -104,9 +105,6 @@ function CategoryPage({ title, category, subtitle }: { title: string, category: 
   );
 }
 
-import { LanguageProvider } from './contexts/LanguageContext';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-
 export default function App() {
   return (
     <LanguageProvider>
@@ -125,7 +123,6 @@ export default function App() {
             </AnimatePresence>
           </main>
           <Footer />
-          <SpeedInsights />
         </div>
       </Router>
     </LanguageProvider>
