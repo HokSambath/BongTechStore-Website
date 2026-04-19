@@ -7,6 +7,7 @@ import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLanguage } from './contexts/LanguageContext';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -124,6 +125,7 @@ export default function App() {
             </AnimatePresence>
           </main>
           <Footer />
+          <SpeedInsights />
         </div>
       </Router>
     </LanguageProvider>
