@@ -34,9 +34,9 @@ export default function Hero() {
             <a href="https://m.me/620274331175123" target="_blank" rel="noreferrer" className="btn-primary">
               {t('hero.shop_now')}
             </a>
-            <button className="btn-outline">
+            <a href="https://t.me/bongtechstore" target="_blank" rel="noreferrer" className="btn-outline">
               {t('hero.view_offers')}
-            </button>
+            </a>
           </div>
         </motion.div>
 
