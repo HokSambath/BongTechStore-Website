@@ -132,12 +132,16 @@ export default function LoginPage() {
     setErrorMsg('');
     setWorking(true);
     try {
-      await signInGoogle();
-      navigate(redirect);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       console.error(err);
-      setErrorMsg('Google login was interrupted or declined.');
-    } finally {
+      setErrorMsg(err.message || 'Google login was interrupted or declined.');
       setWorking(false);
     }
   };
@@ -264,7 +268,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {isFirebaseActive && (
+        {true && (
           <>
             <div className="relative text-center my-6">
               <span className="absolute inset-x-0 top-1/2 h-px bg-border -z-10" />
