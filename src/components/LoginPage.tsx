@@ -292,10 +292,7 @@ export default function LoginPage() {
           </>
         )}
 
-        <div className="mt-6 flex justify-center text-[10px] text-text-dim gap-1.5 items-center">
-          <HelpCircle size={12} />
-          <span>Need admin test credentials? Try email: <strong className="text-white">sambathhok.true@gmail.com</strong></span>
-        </div>
+
       </motion.div>
     </div>
   );

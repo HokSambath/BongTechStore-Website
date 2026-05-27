@@ -123,11 +123,7 @@ export default function AdminSigninPage() {
           </div>
         )}
 
-        <div className="mt-8 border-t border-border pt-4 text-[10px] text-zinc-500 text-center leading-relaxed">
-          Default Super Admin test login:<br />
-          Email: <strong className="text-zinc-300">sambathhok.true@gmail.com</strong><br />
-          Password: <strong className="text-zinc-300">any password</strong> (auto-created locally)
-        </div>
+
       </motion.div>
     </div>
   );

@@ -237,6 +237,11 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
+    // Admins and staff manage all customer orders in the administration dashboard; skip personal loading
+    if (currentUser.role === 'admin' || currentUser.role === 'staff') {
+      return;
+    }
+
     let active = true;
 
     const fetchOrders = async () => {

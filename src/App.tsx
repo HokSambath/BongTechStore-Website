@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, NavLink } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation, NavLink } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';

@@ -40,7 +40,7 @@ export default function AdminPage() {
   // Product editor states
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [productName, setProductName] = useState('');
-  const [productCategory, setProductCategory] = useState<'Device' | 'Gaming PC' | 'Accessories' | 'Smartphone' | 'Product'>('Accessories');
+  const [productCategory, setProductCategory] = useState<string>('Accessories');
   const [productPrice, setProductPrice] = useState('');
   const [productColors, setProductColors] = useState('');
   const [productImage, setProductImage] = useState('');
@@ -522,173 +522,200 @@ export default function AdminPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            className="space-y-10"
           >
-            {/* Left Hand: Product Creator/Editor Form */}
-            <div id="product-editor-anchor" className="lg:col-span-1 bg-zinc-900/60 p-6 rounded-2xl border border-white/5 h-fit relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" />
+            {/* Top Hand: Product Creator/Editor Form (Full Width Layout) */}
+            <div id="product-editor-anchor" className="bg-zinc-900/60 p-8 rounded-2xl border border-white/5 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" stroke-width="2" />
               
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-4 flex items-center gap-2 font-black">
-                <Sparkles size={16} className="text-brand-primary" />
-                {editingProductId ? 'Edit Tech Product' : 'Add New Tech Product'}
+              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-6 flex items-center gap-2">
+                <Sparkles size={16} className="text-brand-primary animate-pulse" />
+                {editingProductId ? 'Edit Tech Product Listing' : 'Publish New Tech Product'}
               </h3>
 
               {productSuccess && (
-                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-4 font-bold font-black">
+                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-6 font-bold font-black">
                   {productSuccess}
                 </div>
               )}
 
               {productError && (
-                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded p-3 mb-4 font-bold font-black">
+                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded p-3 mb-6 font-bold font-black">
                   {productError}
                 </div>
               )}
 
-              <form onSubmit={handleProductSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Product Title</label>
-                  <input 
-                    type="text"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                    required
-                    placeholder="e.g. Bong Custom Ryzen 9 Ultimate Gaming Rig"
-                    className="input-field placeholder:text-zinc-600"
-                  />
-                </div>
+              <form onSubmit={handleProductSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {/* Column 1: Core Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Product Title</label>
+                      <input 
+                        type="text"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                        required
+                        placeholder="e.g. Bong Custom Ryzen 9 Ultimate Gaming Rig"
+                        className="input-field placeholder:text-zinc-650"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Store Category</label>
-                  <select 
-                    value={productCategory}
-                    onChange={(e) => setProductCategory(e.target.value as any)}
-                    className="input-field bg-zinc-950 font-sans text-xs"
-                  >
-                    <option value="Device">Device</option>
-                    <option value="Gaming PC">Gaming PC & Rigs</option>
-                    <option value="Accessories">Accessories</option>
-                    <option value="Smartphone">Smartphone</option>
-                    <option value="Product">Product / General Tech</option>
-                  </select>
-                </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1 flex justify-between">
+                        <span>Store Category</span>
+                        <span className="text-[8px] font-bold text-brand-primary lowercase">or type text directly</span>
+                      </label>
+                      <input 
+                        type="text"
+                        value={productCategory}
+                        required
+                        onChange={(e) => setProductCategory(e.target.value)}
+                        placeholder="e.g. Custom Rig, VR Setup, Mechanical Keyboard"
+                        className="input-field placeholder:text-zinc-650"
+                      />
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {['Device', 'Gaming PC', 'Accessories', 'Smartphone', 'Product'].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setProductCategory(preset)}
+                            className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border transition-all ${
+                              productCategory === preset 
+                                ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
+                                : 'bg-zinc-950 border-white/5 text-zinc-400 hover:border-white/10 hover:text-white'
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Retail Price (USD)</label>
-                    <input 
-                      type="text"
-                      value={productPrice}
-                      onChange={(e) => setProductPrice(e.target.value)}
-                      required
-                      placeholder="e.g. $1,299.99"
-                      className="input-field placeholder:text-zinc-600 font-mono"
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Retail Price (USD)</label>
+                        <input 
+                          type="text"
+                          value={productPrice}
+                          onChange={(e) => setProductPrice(e.target.value)}
+                          required
+                          placeholder="e.g. $1,299.99"
+                          className="input-field placeholder:text-zinc-650 font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Available Colors</label>
+                        <input 
+                          type="text"
+                          value={productColors}
+                          onChange={(e) => setProductColors(e.target.value)}
+                          placeholder="e.g. Black, Silver, White"
+                          className="input-field placeholder:text-zinc-650"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Available Colors</label>
-                    <input 
-                      type="text"
-                      value={productColors}
-                      onChange={(e) => setProductColors(e.target.value)}
-                      placeholder="e.g. Black, Silver, White"
-                      className="input-field placeholder:text-zinc-600"
-                    />
+
+                  {/* Column 2: Media, Features & Specifications */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Banner Image URL</label>
+                      <input 
+                        type="url"
+                        value={productImage}
+                        onChange={(e) => setProductImage(e.target.value)}
+                        placeholder="e.g. https://images.unsplash.com/photo-xxx"
+                        className="input-field placeholder:text-zinc-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1 flex items-center justify-between">
+                        <span>Performance Specs</span>
+                        <span className="text-[8px] font-bold text-brand-primary lowercase">key:value per line</span>
+                      </label>
+                      <textarea 
+                        value={productSpecsStr}
+                        onChange={(e) => setProductSpecsStr(e.target.value)}
+                        placeholder="GPU: Nvidia RTX 4080 Super&#10;CPU: AMD Ryzen 9 7900X&#10;RAM: 32GB DDR5 Kingston Fury&#10;Storage: 2TB Samsung 990 Pro NVMe"
+                        rows={3}
+                        className="input-field placeholder:text-zinc-600 font-mono text-[11px] leading-relaxed resize-y h-[92px]"
+                      />
+                    </div>
+
+                    <div className="flex gap-4 p-2.5 bg-zinc-950/40 rounded-lg border border-white/5">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input 
+                          type="checkbox"
+                          checked={productIsNew}
+                          onChange={(e) => setProductIsNew(e.target.checked)}
+                          className="rounded border-zinc-700 text-brand-primary focus:ring-brand-primary bg-zinc-950 h-3.5 w-3.5"
+                        />
+                        <span className="text-[10px] font-black uppercase text-zinc-400">Mark "New"</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input 
+                          type="checkbox"
+                          checked={productIsFeatured}
+                          onChange={(e) => setProductIsFeatured(e.target.checked)}
+                          className="rounded border-zinc-700 text-brand-primary focus:ring-brand-primary bg-zinc-950 h-3.5 w-3.5"
+                        />
+                        <span className="text-[10px] font-black uppercase text-zinc-400 font-black">Featured Slider</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Banner Image URL</label>
-                  <input 
-                    type="url"
-                    value={productImage}
-                    onChange={(e) => setProductImage(e.target.value)}
-                    placeholder="e.g. https://images.unsplash.com/photo-xxx"
-                    className="input-field placeholder:text-zinc-600"
-                  />
-                </div>
+                  {/* Column 3: Detailed Description & Actions */}
+                  <div className="space-y-4 flex flex-col justify-between">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Product Description</label>
+                      <textarea 
+                        value={productDescription}
+                        onChange={(e) => setProductDescription(e.target.value)}
+                        required
+                        placeholder="Write detailed specifications, notes or warranty info..."
+                        className="input-field placeholder:text-zinc-600 min-h-[142px] resize-y"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1 flex items-center justify-between">
-                    <span>Performance Specs</span>
-                    <span className="text-[8px] font-bold text-brand-primary lowercase font-sans font-black">Use Key:Value per line</span>
-                  </label>
-                  <textarea 
-                    value={productSpecsStr}
-                    onChange={(e) => setProductSpecsStr(e.target.value)}
-                    placeholder="GPU: Nvidia RTX 4080 Super&#10;CPU: AMD Ryzen 9 7900X&#10;RAM: 32GB DDR5 Kingston Fury&#10;Storage: 2TB Samsung 990 Pro NVMe"
-                    rows={4}
-                    className="input-field placeholder:text-zinc-600 font-mono text-[11px] leading-relaxed resize-y"
-                  />
-                </div>
+                    <div className="pt-2 flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={submittingProduct}
+                        className="btn-primary flex-1 py-2.5 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse"
+                      >
+                        {submittingProduct ? 'Syncing...' : (editingProductId ? 'Update Product' : 'Add Product')}
+                      </button>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Product Description</label>
-                  <textarea 
-                    value={productDescription}
-                    onChange={(e) => setProductDescription(e.target.value)}
-                    required
-                    placeholder="Write detailed specifications, notes or warranty info..."
-                    className="input-field placeholder:text-zinc-600 min-h-[90px] resize-y"
-                  />
-                </div>
-
-                <div className="flex gap-4 p-2 bg-zinc-950/40 rounded-lg border border-white/5">
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input 
-                      type="checkbox"
-                      checked={productIsNew}
-                      onChange={(e) => setProductIsNew(e.target.checked)}
-                      className="rounded border-zinc-700 text-brand-primary focus:ring-brand-primary bg-zinc-950 h-3.5 w-3.5"
-                    />
-                    <span className="text-[10px] font-black uppercase text-zinc-400">Mark "New"</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <input 
-                      type="checkbox"
-                      checked={productIsFeatured}
-                      onChange={(e) => setProductIsFeatured(e.target.checked)}
-                      className="rounded border-zinc-700 text-brand-primary focus:ring-brand-primary bg-zinc-950 h-3.5 w-3.5"
-                    />
-                    <span className="text-[10px] font-black uppercase text-zinc-400 font-black">Featured Slider</span>
-                  </label>
-                </div>
-
-                <div className="pt-2 flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={submittingProduct}
-                    className="btn-primary flex-1 py-2 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 animate-pulse"
-                  >
-                    {submittingProduct ? 'Syncing...' : (editingProductId ? 'Update Product' : 'Add Product')}
-                  </button>
-
-                  {editingProductId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingProductId(null);
-                        setProductName('');
-                        setProductPrice('');
-                        setProductColors('');
-                        setProductImage('');
-                        setProductDescription('');
-                        setProductSpecsStr('');
-                        setProductIsNew(false);
-                        setProductIsFeatured(false);
-                      }}
-                      className="px-3 bg-zinc-800 text-white border border-white/10 hover:bg-zinc-700 font-bold uppercase tracking-widest text-[10px] rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                  )}
+                      {editingProductId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProductId(null);
+                            setProductName('');
+                            setProductPrice('');
+                            setProductColors('');
+                            setProductImage('');
+                            setProductDescription('');
+                            setProductSpecsStr('');
+                            setProductIsNew(false);
+                            setProductIsFeatured(false);
+                          }}
+                          className="px-3 bg-zinc-800 text-white border border-white/10 hover:bg-zinc-700 font-bold uppercase tracking-widest text-[10px] rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
 
-            {/* Right Hand: Interactive Store Catalog Registry */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-border/60">
+            {/* Bottom Hand: Interactive Store Catalog Registry */}
+            <div className="space-y-4 pt-6 border-t border-white/5">
+              <div className="flex justify-between items-center pb-2">
                 <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5 font-black">
                   <Plus size={15} className="text-brand-primary animate-pulse" />
                   Live Store Catalog Listings ({products.length})
@@ -700,7 +727,7 @@ export default function AdminPage() {
               ) : products.length === 0 ? (
                 <div className="text-xs text-text-dim text-center py-10 font-bold">No products found in the database. Add some using the compose panel!</div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {products.map((prod) => (
                     <div 
                       key={prod.id}
@@ -708,7 +735,7 @@ export default function AdminPage() {
                     >
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[9px] font-black uppercase text-brand-primary bg-brand-primary/10 border border-brand-primary/15 px-2 py-0.5 rounded">
+                          <span className="text-[9px] font-black uppercase text-brand-primary bg-brand-primary/10 border border-brand-primary/15 px-2 py-0.5 rounded truncate max-w-[130px]">
                             {prod.category}
                           </span>
                           <span className="text-xs font-black text-white">{prod.price}</span>
@@ -779,122 +806,152 @@ export default function AdminPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            className="space-y-10"
           >
-            {/* Left Hand: Article Creator/Editor Form */}
-            <div id="blog-editor-anchor" className="lg:col-span-1 bg-zinc-900/60 p-6 rounded-2xl border border-white/5 h-fit relative">
+            {/* Top Hand: Article Creator/Editor Form (Full Width Layout) */}
+            <div id="blog-editor-anchor" className="bg-zinc-900/60 p-8 rounded-2xl border border-white/5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" />
               
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-4 flex items-center gap-2">
-                <Sparkles size={16} className="text-brand-primary" />
+              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-6 flex items-center gap-2">
+                <Sparkles size={16} className="text-brand-primary animate-pulse" />
                 {editingPostId ? 'Edit Blog Post' : 'Compose Blog Post'}
               </h3>
 
               {blogSuccess && (
-                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-4 font-bold">
+                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-6 font-bold">
                   {blogSuccess}
                 </div>
               )}
 
               {blogError && (
-                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded p-3 mb-4 font-bold">
+                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded p-3 mb-6 font-bold">
                   {blogError}
                 </div>
               )}
 
-              <form onSubmit={handleBlogSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Article Title</label>
-                  <input 
-                    type="text"
-                    value={blogTitle}
-                    onChange={(e) => setBlogTitle(e.target.value)}
-                    required
-                    placeholder="e.g. Hands on with the IINE Ananke 2"
-                    className="input-field placeholder:text-zinc-600"
-                  />
-                </div>
+              <form onSubmit={handleBlogSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {/* Column 1: Title & Category */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Article Title</label>
+                      <input 
+                        type="text"
+                        value={blogTitle}
+                        onChange={(e) => setBlogTitle(e.target.value)}
+                        required
+                        placeholder="e.g. Hands on with the IINE Ananke 2"
+                        className="input-field placeholder:text-zinc-650"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Category Header</label>
-                  <select 
-                    value={blogCategory}
-                    onChange={(e) => setBlogCategory(e.target.value)}
-                    className="input-field bg-zinc-950 font-sans"
-                  >
-                    <option value="Reviews">Reviews</option>
-                    <option value="YouTube">YouTube Feature</option>
-                    <option value="Guides">Guides/How-To</option>
-                    <option value="Announcements">Announcements</option>
-                  </select>
-                </div>
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1 flex justify-between">
+                        <span>Category Header</span>
+                        <span className="text-[8px] font-bold text-brand-primary lowercase">or type text directly</span>
+                      </label>
+                      <input 
+                        type="text"
+                        value={blogCategory}
+                        required
+                        onChange={(e) => setBlogCategory(e.target.value)}
+                        placeholder="e.g. Reviews, Tutorials, Tech Guides"
+                        className="input-field placeholder:text-zinc-650"
+                      />
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {['Reviews', 'YouTube', 'Guides', 'Announcements'].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setBlogCategory(preset)}
+                            className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border transition-all ${
+                              blogCategory === preset 
+                                ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
+                                : 'bg-zinc-950 border-white/5 text-zinc-400 hover:border-white/10 hover:text-white'
+                            }`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Excerpt Summary</label>
-                  <textarea 
-                    value={blogExcerpt}
-                    onChange={(e) => setBlogExcerpt(e.target.value)}
-                    required
-                    placeholder="An eye-catching 2-3 sentence overview designed to draw reader engagement..."
-                    className="input-field placeholder:text-zinc-600 min-h-[90px] resize-y"
-                  />
-                </div>
+                  {/* Column 2: Excerpt Summary */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Excerpt Summary</label>
+                      <textarea 
+                        value={blogExcerpt}
+                        onChange={(e) => setBlogExcerpt(e.target.value)}
+                        required
+                        placeholder="An eye-catching 2-3 sentence overview designed to draw reader engagement..."
+                        className="input-field placeholder:text-zinc-650 min-h-[142px] resize-y"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Image URL (Optional)</label>
-                  <input 
-                    type="url"
-                    value={blogImage}
-                    onChange={(e) => setBlogImage(e.target.value)}
-                    placeholder="e.g. https://picsum.photos/seed/blog/800/400"
-                    className="input-field placeholder:text-zinc-600"
-                  />
-                </div>
+                  {/* Column 3: Media & Actions */}
+                  <div className="space-y-4 flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Image URL (Optional)</label>
+                        <input 
+                          type="url"
+                          value={blogImage}
+                          onChange={(e) => setBlogImage(e.target.value)}
+                          placeholder="e.g. https://picsum.photos/seed/blog/800/400"
+                          className="input-field placeholder:text-zinc-600"
+                        />
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Embedded YouTube URL (Optional)</label>
-                  <input 
-                    type="url"
-                    value={blogVideoUrl}
-                    onChange={(e) => setBlogVideoUrl(e.target.value)}
-                    placeholder="e.g. https://www.youtube.com/embed/TAI_3NY-wNw"
-                    className="input-field placeholder:text-zinc-600"
-                  />
-                </div>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Embedded YouTube URL (Optional)</label>
+                        <input 
+                          type="url"
+                          value={blogVideoUrl}
+                          onChange={(e) => setBlogVideoUrl(e.target.value)}
+                          placeholder="e.g. https://www.youtube.com/embed/TAI_3NY-wNw"
+                          className="input-field placeholder:text-zinc-600"
+                        />
+                      </div>
+                    </div>
 
-                <div className="pt-2 flex gap-2">
-                  <button
-                    type="submit"
-                    disabled={submittingBlog}
-                    className="btn-primary flex-1 py-2 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
-                  >
-                    {submittingBlog ? 'Pending...' : (editingPostId ? 'Update Post' : 'Publish Post')}
-                  </button>
+                    <div className="pt-2 flex gap-2">
+                      <button
+                        type="submit"
+                        disabled={submittingBlog}
+                        className="btn-primary flex-1 py-2.5 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                      >
+                        {submittingBlog ? 'Pending...' : (editingPostId ? 'Update Post' : 'Publish Post')}
+                      </button>
 
-                  {editingPostId && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingPostId(null);
-                        setBlogTitle('');
-                        setBlogExcerpt('');
-                        setBlogCategory('Reviews');
-                        setBlogImage('');
-                        setBlogVideoUrl('');
-                      }}
-                      className="px-3 bg-zinc-800 text-white border border-white/10 hover:bg-zinc-700 font-bold uppercase tracking-widest text-[10px] rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                  )}
+                      {editingPostId && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPostId(null);
+                            setBlogTitle('');
+                            setBlogExcerpt('');
+                            setBlogCategory('Reviews');
+                            setBlogImage('');
+                            setBlogVideoUrl('');
+                          }}
+                          className="px-3 bg-zinc-800 text-white border border-white/10 hover:bg-zinc-700 font-bold uppercase tracking-widest text-[10px] rounded-lg"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </form>
             </div>
 
-            {/* Right Hand: Interactive Articles Registry List */}
-            <div className="lg:col-span-2 space-y-4">
-              <div className="flex justify-between items-center pb-2 border-b border-border/60">
-                <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5ClassName">
+            {/* Bottom Hand: Interactive Articles Registry List */}
+            <div className="space-y-4 pt-6 border-t border-white/5">
+              <div className="flex justify-between items-center pb-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
                   <FileText size={15} className="text-brand-primary" />
                   Live Article Listings ({blogPosts.length})
                 </h3>
@@ -903,28 +960,28 @@ export default function AdminPage() {
               {loadingBlog ? (
                 <div className="text-xs text-text-dim text-center py-10">Syncing live articles library...</div>
               ) : blogPosts.length === 0 ? (
-                <div className="text-xs text-text-dim text-center py-10">No articles found. Add some using the compose panel!</div>
+                <div className="text-xs text-text-dim text-center py-10 font-bold">No articles found. Add some using the compose panel!</div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {blogPosts.map((post) => (
                     <div 
                       key={post.id}
-                      className="bg-zinc-950/60 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-white/10 transition-all group"
+                      className="bg-zinc-950/60 border border-white/5 rounded-xl p-4 flex flex-col justify-between hover:border-white/10 transition-all group lg:min-h-[220px]"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[9px] font-black uppercase text-brand-primary bg-brand-primary/10 border border-brand-primary/15 px-2 py-0.5 rounded">
+                          <span className="text-[9px] font-black uppercase text-brand-primary bg-brand-primary/10 border border-brand-primary/15 px-2 py-0.5 rounded truncate max-w-[130px]">
                             {post.category}
                           </span>
                           <span className="text-[10px] font-mono text-text-dim">{post.date}</span>
                         </div>
-                        <h4 className="font-bold text-sm text-white line-clamp-2 mb-1.5">{post.title}</h4>
+                        <h4 className="font-bold text-sm text-white line-clamp-2 mb-1.5 group-hover:text-brand-primary transition-colors">{post.title}</h4>
                         <p className="text-xs text-text-dim line-clamp-3 leading-relaxed mb-4">{post.excerpt}</p>
                       </div>
 
                       <div className="flex items-center justify-between pt-3 border-t border-white/5 mt-auto">
-                        <span className="text-[10px] font-semibold text-text-dim">By: {post.author}</span>
-                        <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-semibold text-text-dim truncate max-w-[100px]">By: {post.author}</span>
+                        <div className="flex items-center gap-3 font-bold uppercase text-[10px]">
                           <button
                             onClick={() => handleEditBlogClick(post)}
                             className="text-[10px] uppercase font-bold text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
