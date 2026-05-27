@@ -1,31 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { 
-  db, 
-  auth, 
-  isFirebaseConfigured, 
-  handleFirestoreError, 
-  OperationType 
-} from '../lib/firebase';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  getDocs, 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  onSnapshot 
-} from 'firebase/firestore';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  signInWithPopup,
-  GoogleAuthProvider
-} from 'firebase/auth';
 import { Product } from '../types';
 
 export interface CartItem {
@@ -78,10 +52,38 @@ interface AuthOrderContextType {
   logOutUser: () => Promise<void>;
   placeOrder: (name: string, phone: string) => Promise<void>;
   updateOrderStatus: (orderId: string, status: 'confirmed' | 'cancelled') => Promise<void>;
-  loadAllOrdersForAdmin: () => void;
+  loadAllOrdersForAdmin: () => (() => void) | void;
+  deleteOrder: (orderId: string) => Promise<void>;
 }
 
 const AuthOrderContext = createContext<AuthOrderContextType | undefined>(undefined);
+
+// Helper functions for mapping between camelCase (JS/TS) and snake_case (Postgres/Supabase)
+const mapToDbOrder = (order: Order) => ({
+  id: order.id,
+  customer_id: order.customerId,
+  customer_name: order.customerName,
+  customer_email: order.customerEmail,
+  customer_phone: order.customerPhone,
+  items: order.items,
+  total_price: order.totalPrice,
+  status: order.status,
+  created_at: typeof order.createdAt === 'string' ? order.createdAt : new Date(order.createdAt).toISOString(),
+  updated_at: typeof order.updatedAt === 'string' ? order.updatedAt : new Date(order.updatedAt).toISOString()
+});
+
+const mapFromDbOrder = (dbOrder: any): Order => ({
+  id: dbOrder.id,
+  customerId: dbOrder.customer_id,
+  customerName: dbOrder.customer_name,
+  customerEmail: dbOrder.customer_email,
+  customerPhone: dbOrder.customer_phone,
+  items: dbOrder.items,
+  totalPrice: dbOrder.total_price,
+  status: dbOrder.status as Order['status'],
+  createdAt: dbOrder.created_at,
+  updatedAt: dbOrder.updated_at
+});
 
 export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -90,17 +92,14 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const saved = localStorage.getItem('bongtech_cart');
     return saved ? JSON.parse(saved) : [];
   });
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('bongtech_orders');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [orders, setOrders] = useState<Order[]>([]);
 
   // Save cart to local storage whenever it changes
   useEffect(() => {
     localStorage.setItem('bongtech_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Auth synchronization
+  // Auth synchronization with Supabase
   useEffect(() => {
     let active = true;
 
@@ -123,7 +122,6 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setCurrentUser(profile);
         localStorage.setItem('bongtech_currentUser', JSON.stringify(profile));
       } else {
-        // Clear stale local storage user if no Supabase session is present
         setCurrentUser(null);
         localStorage.removeItem('bongtech_currentUser');
       }
@@ -147,7 +145,6 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           setCurrentUser(profile);
           localStorage.setItem('bongtech_currentUser', JSON.stringify(profile));
         } else {
-          // Clears state if session has expired, is null, or user has signed out
           setCurrentUser(null);
           localStorage.removeItem('bongtech_currentUser');
         }
@@ -169,36 +166,54 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, []);
 
-  // Listen to Customer's Personal Orders (if Firestore is active)
+  // Listen to Customer's Personal Orders via Supabase and subscribe to changes in real-time
   useEffect(() => {
-    if (isFirebaseConfigured && db && currentUser) {
-      if (currentUser.role === 'customer') {
-        const orderPath = 'orders';
-        const q = query(
-          collection(db, orderPath), 
-          where('customerId', '==', currentUser.id),
-          orderBy('createdAt', 'desc')
-        );
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-          const freshOrders: Order[] = [];
-          snapshot.forEach((docSnap) => {
-            freshOrders.push(docSnap.data() as Order);
-          });
-          setOrders(freshOrders);
-        }, (error) => {
-          handleFirestoreError(error, OperationType.LIST, orderPath);
-        });
-        return unsubscribe;
-      }
-    } else if (currentUser) {
-      // Offline fallback: load only user's items from local orders
-      const savedOrders = localStorage.getItem('bongtech_orders');
-      if (savedOrders) {
-        const parsed: Order[] = JSON.parse(savedOrders);
-        const userOrders = parsed.filter(o => o.customerId === currentUser.id);
-        setOrders(userOrders);
-      }
+    if (!currentUser) {
+      setOrders([]);
+      return;
     }
+
+    let active = true;
+
+    const fetchOrders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('customer_id', currentUser.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (active && data) {
+          setOrders(data.map(mapFromDbOrder));
+        }
+      } catch (err) {
+        console.error('Error fetching user orders from Supabase:', err);
+      }
+    };
+
+    fetchOrders();
+
+    const channel = supabase
+      .channel(`customer-orders-${currentUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `customer_id=eq.${currentUser.id}`
+        },
+        () => {
+          fetchOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      channel.unsubscribe();
+    };
   }, [currentUser]);
 
   // Cart operations
@@ -236,124 +251,35 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Auth Operations
   const signUpUser = async (email: string, name: string, phone: string, password = 'defaultPassword') => {
-    const bootstrappedRole = email === 'sambathhok.true@gmail.com' ? 'admin' : 'customer';
-    
-    if (isFirebaseConfigured && auth && db) {
-      try {
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        const userProfile: UserProfile = {
-          id: res.user.uid,
-          email,
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
           name,
-          phone,
-          role: bootstrappedRole,
-          createdAt: new Date().toISOString()
-        };
-        
-        await setDoc(doc(db, 'users', res.user.uid), userProfile);
-        setCurrentUser(userProfile);
-      } catch (err) {
-        console.error('Firebase Signup Error:', err);
-        throw err;
+          phone
+        }
       }
-    } else {
-      // Local Database Registration
-      const localUsers = JSON.parse(localStorage.getItem('bongtech_users') || '[]');
-      if (localUsers.find((u: any) => u.email === email)) {
-        throw new Error('Email already registered locally.');
-      }
-      
-      const newId = 'local_' + Math.random().toString(36).substr(2, 9);
-      const userProfile: UserProfile = {
-        id: newId,
-        email,
-        name,
-        phone,
-        role: bootstrappedRole,
-        createdAt: new Date().toISOString()
-      };
-      
-      localUsers.push({ ...userProfile, password });
-      localStorage.setItem('bongtech_users', JSON.stringify(localUsers));
-      localStorage.setItem('bongtech_currentUser', JSON.stringify(userProfile));
-      setCurrentUser(userProfile);
-    }
+    });
+    if (error) throw error;
   };
 
   const signInUser = async (email: string, password = 'defaultPassword') => {
-    if (isFirebaseConfigured && auth && db) {
-      try {
-        const res = await signInWithEmailAndPassword(auth, email, password);
-        const userSnap = await getDoc(doc(db, 'users', res.user.uid));
-        if (userSnap.exists()) {
-          setCurrentUser(userSnap.data() as UserProfile);
-        }
-      } catch (err) {
-        console.error('Firebase SignIn Error:', err);
-        throw err;
-      }
-    } else {
-      // Local Database Authentication
-      const localUsers = JSON.parse(localStorage.getItem('bongtech_users') || '[]');
-      const foundUser = localUsers.find((u: any) => u.email === email && u.password === password);
-      
-      if (!foundUser) {
-        // Build an automated fallback for sandbox users to register automatically
-        const bootstrappedRole = email === 'sambathhok.true@gmail.com' ? 'admin' : 'customer';
-        const defaultProfile: UserProfile = {
-          id: 'local_' + Math.random().toString(36).substr(2, 9),
-          email,
-          name: email.split('@')[0],
-          phone: '',
-          role: bootstrappedRole,
-          createdAt: new Date().toISOString()
-        };
-        localUsers.push({ ...defaultProfile, password });
-        localStorage.setItem('bongtech_users', JSON.stringify(localUsers));
-        localStorage.setItem('bongtech_currentUser', JSON.stringify(defaultProfile));
-        setCurrentUser(defaultProfile);
-        return;
-      }
-      
-      const { password: _, ...profile } = foundUser;
-      localStorage.setItem('bongtech_currentUser', JSON.stringify(profile));
-      setCurrentUser(profile as UserProfile);
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+    if (error) throw error;
   };
 
   const signInGoogle = async () => {
-    if (isFirebaseConfigured && auth && db) {
-      try {
-        const provider = new GoogleAuthProvider();
-        const res = await signInWithPopup(auth, provider);
-        const userDocRef = doc(db, 'users', res.user.uid);
-        const userSnap = await getDoc(userDocRef);
-        
-        let profile: UserProfile;
-        if (userSnap.exists()) {
-          profile = userSnap.data() as UserProfile;
-        } else {
-          const bootstrappedRole = res.user.email === 'sambathhok.true@gmail.com' ? 'admin' : 'customer';
-          profile = {
-            id: res.user.uid,
-            email: res.user.email || '',
-            name: res.user.displayName || 'Google User',
-            phone: '',
-            role: bootstrappedRole,
-            createdAt: new Date().toISOString()
-          };
-          await setDoc(userDocRef, profile);
-        }
-        setCurrentUser(profile);
-      } catch (err) {
-        console.error('Google Auth Error:', err);
-        throw err;
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
       }
-    } else {
-      // Local Mock Google Login
-      const mockEmail = 'google_user@bongtech.cc';
-      await signInUser(mockEmail);
-    }
+    });
+    if (error) throw error;
   };
 
   const logOutUser = async () => {
@@ -394,30 +320,20 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       })),
       totalPrice: `$${totalPriceNum.toFixed(2)}`,
       status: 'pending',
-      createdAt: isFirebaseConfigured ? new Date() : new Date().toISOString(),
-      updatedAt: isFirebaseConfigured ? new Date() : new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
-    if (isFirebaseConfigured && db) {
-      const path = 'orders';
-      try {
-        await setDoc(doc(db, path, orderId), {
-          ...newOrder,
-          createdAt: new Date(), // Firebase rules enforce strict timestamps
-          updatedAt: new Date()
-        });
-        clearCart();
-      } catch (err) {
-        handleFirestoreError(err, OperationType.WRITE, path);
-      }
-    } else {
-      // Local offline database
-      const savedOrders = JSON.parse(localStorage.getItem('bongtech_orders') || '[]');
-      savedOrders.unshift(newOrder);
-      localStorage.setItem('bongtech_orders', JSON.stringify(savedOrders));
-      
-      setOrders(prev => [newOrder, ...prev]);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .insert([mapToDbOrder(newOrder)]);
+
+      if (error) throw error;
       clearCart();
+    } catch (err) {
+      console.error('Error placing order in Supabase:', err);
+      throw err;
     }
   };
 
@@ -427,32 +343,36 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       throw new Error('Unauthorized status modification.');
     }
 
-    if (isFirebaseConfigured && db) {
-      const path = 'orders';
-      try {
-        const orderRef = doc(db, path, orderId);
-        const orderSnap = await getDoc(orderRef);
-        if (orderSnap.exists()) {
-          const currentOrder = orderSnap.data() as Order;
-          await setDoc(orderRef, {
-            ...currentOrder,
-            status,
-            updatedAt: new Date()
-          });
-        }
-      } catch (err) {
-        handleFirestoreError(err, OperationType.WRITE, path);
-      }
-    } else {
-      // Local Database status update
-      const savedOrders = JSON.parse(localStorage.getItem('bongtech_orders') || '[]');
-      const updated = savedOrders.map((o: Order) => 
-        o.id === orderId ? { ...o, status, updatedAt: new Date().toISOString() } : o
-      );
-      localStorage.setItem('bongtech_orders', JSON.stringify(updated));
-      
-      // Sync local dashboard state instantly
-      setOrders(updated);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error updating order status in Supabase:', err);
+      throw err;
+    }
+  };
+
+  // Delete order
+  const deleteOrder = async (orderId: string) => {
+    if (!currentUser) throw new Error('Must sign in to delete order.');
+
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (error) throw error;
+    } catch (err) {
+      console.error('Error deleting order in Supabase:', err);
+      throw err;
     }
   };
 
@@ -460,26 +380,45 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const loadAllOrdersForAdmin = () => {
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'staff')) return;
 
-    if (isFirebaseConfigured && db) {
-      const path = 'orders';
-      const q = query(collection(db, path), orderBy('createdAt', 'desc'));
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const freshOrders: Order[] = [];
-        snapshot.forEach((docSnap) => {
-          freshOrders.push(docSnap.data() as Order);
-        });
-        setOrders(freshOrders);
-      }, (error) => {
-        handleFirestoreError(error, OperationType.LIST, path);
-      });
-      return unsubscribe;
-    } else {
-      // Offline fallback: load everything from localstorage
-      const savedOrders = localStorage.getItem('bongtech_orders');
-      if (savedOrders) {
-        setOrders(JSON.parse(savedOrders));
+    let active = true;
+
+    const fetchAllOrders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (active && data) {
+          setOrders(data.map(mapFromDbOrder));
+        }
+      } catch (err) {
+        console.error('Error fetching admin orders from Supabase:', err);
       }
-    }
+    };
+
+    fetchAllOrders();
+
+    const channel = supabase
+      .channel('admin-all-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders'
+        },
+        () => {
+          fetchAllOrders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      channel.unsubscribe();
+    };
   };
 
   return (
@@ -488,7 +427,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       loading,
       cart,
       orders,
-      isFirebaseActive: isFirebaseConfigured,
+      isFirebaseActive: false,
       addToCart,
       removeFromCart,
       updateCartQuantity,
@@ -499,7 +438,8 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       logOutUser,
       placeOrder,
       updateOrderStatus,
-      loadAllOrdersForAdmin
+      loadAllOrdersForAdmin,
+      deleteOrder
     }}>
       {children}
     </AuthOrderContext.Provider>
