@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Role-based Access Control using Firestore lookups
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    function hasUserDoc(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId));
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'sambathhok.true@gmail.com' ||
+        (hasUserDoc(request.auth.uid) && getUserRole(request.auth.uid) == 'admin')
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && (
+        request.auth.token.email == 'sambathhok.true@gmail.com' ||
+        (hasUserDoc(request.auth.uid) && (getUserRole(request.auth.uid) == 'staff' || getUserRole(request.auth.uid) == 'admin'))
+      );
+    }
+
+    // Entity Validations
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'email', 'role', 'createdAt', 'name', 'phone']) 
+        && data.keys().size() == 6
+        && data.id is string && data.id.size() <= 128
+        && data.email is string && data.email.size() <= 200
+        && data.role is string && (data.role == 'customer' || data.role == 'staff' || data.role == 'admin')
+        && data.name is string && data.name.size() <= 100
+        && data.phone is string && data.phone.size() <= 30
+        && data.createdAt is timestamp;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll([
+        'id', 'customerId', 'customerName', 'customerEmail', 'customerPhone', 
+        'items', 'totalPrice', 'status', 'createdAt', 'updatedAt'
+      ])
+        && data.keys().size() == 10
+        && data.id is string && data.id.size() <= 128
+        && data.customerId is string && data.customerId.size() <= 128
+        && data.customerName is string && data.customerName.size() <= 100
+        && data.customerEmail is string && data.customerEmail.size() <= 200
+        && data.customerPhone is string && data.customerPhone.size() <= 30
+        && data.items is list && data.items.size() > 0 && data.items.size() <= 50
+        && data.totalPrice is string && data.totalPrice.size() <= 30
+        && data.status is string && (data.status == 'pending' || data.status == 'confirmed' || data.status == 'cancelled')
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Routes ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && (isOwner(userId) || isStaff());
+      allow list: if isStaff();
+      
+      allow create: if isSignedIn() 
+        && isOwner(userId)
+        && isValidId(userId)
+        && isValidUser(request.resource.data)
+        && request.resource.data.id == userId
+        && request.resource.data.createdAt == request.time
+        // Prevent unauthorized privilege escalation - new users default to customer unless they are the bootstrapped admin email
+        && (request.resource.data.role == 'customer' || request.auth.token.email == 'sambathhok.true@gmail.com');
+
+      allow update: if isSignedIn()
+        && isOwner(userId)
+        && isValidUser(request.resource.data)
+        // Immutable email & role for clients to prevent identity hacking and elevation
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.createdAt == resource.data.createdAt
+        // Limit modify keys to phone/name to prevent any other side updates
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'phone']);
+        
+      allow delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && (resource.data.customerId == request.auth.uid || isStaff());
+      
+      // Query enforcement: clients must filter by their own customerId unless they are staff/admin
+      allow list: if isSignedIn() && (isStaff() || resource.data.customerId == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && isValidId(orderId)
+        && isValidOrder(request.resource.data)
+        && request.resource.data.id == orderId
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if isSignedIn()
+        && (isStaff() || isAdmin())
+        && isValidOrder(request.resource.data)
+        // Check order immutable fields
+        && request.resource.data.id == resource.data.id
+        && request.resource.data.customerId == resource.data.customerId
+        && request.resource.data.totalPrice == resource.data.totalPrice
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        // Terminal State: Once an order is confirmed or cancelled, it cannot be edited unless by an Admin
+        && (resource.data.status == 'pending' || isAdmin())
+        // Action: Check key updating restrictions (only allow updating status/updatedAt)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']);
+
+      allow delete: if isAdmin();
+    }
+  }
+}

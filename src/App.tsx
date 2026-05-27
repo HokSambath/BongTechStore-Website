@@ -167,31 +167,46 @@ function AboutPage() {
 
 import { LanguageProvider } from './contexts/LanguageContext';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { AuthOrderProvider } from './contexts/AuthOrderContext';
+import CartPage from './components/CartPage';
+import OrdersPage from './components/OrdersPage';
+import LoginPage from './components/LoginPage';
+import ProfilePage from './components/ProfilePage';
+import AdminPage from './components/AdminPage';
+import AdminSigninPage from './components/AdminSigninPage';
 
 export default function App() {
   return (
     <LanguageProvider>
-      <Router>
-        <SpeedInsights />
-        <ScrollToTop />
-        <div className="min-h-screen flex flex-col Selection:bg-brand-primary Selection:text-white">
-          <Navbar />
-          <Sidebar />
-          <div className="flex-grow lg:pl-64 flex flex-col transition-all duration-300">
-            <main className="flex-grow">
-              <AnimatePresence mode="wait">
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/product" element={<CategoryPage title="nav.product" subtitle="grid.accessories_sub" category="Product" />} />
-                  <Route path="/blog" element={<div className="pt-32"><BlogSection /></div>} />
-                  <Route path="/about" element={<AboutPage />} />
-                </Routes>
-              </AnimatePresence>
-            </main>
-            <Footer />
+      <AuthOrderProvider>
+        <Router>
+          <SpeedInsights />
+          <ScrollToTop />
+          <div className="min-h-screen flex flex-col Selection:bg-brand-primary Selection:text-white">
+            <Navbar />
+            <Sidebar />
+            <div className="flex-grow lg:pl-64 flex flex-col transition-all duration-300">
+              <main className="flex-grow">
+                <AnimatePresence mode="wait">
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/product" element={<CategoryPage title="nav.product" subtitle="grid.accessories_sub" category="Product" />} />
+                    <Route path="/blog" element={<div className="pt-32"><BlogSection /></div>} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/orders" element={<OrdersPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/admin/signin" element={<AdminSigninPage />} />
+                  </Routes>
+                </AnimatePresence>
+              </main>
+              <Footer />
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
+      </AuthOrderProvider>
     </LanguageProvider>
   );
 }
