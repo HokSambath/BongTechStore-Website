@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, Calendar, Shield, Edit3, Save, CheckCircle2, ClipboardList } from 'lucide-react';
 import { motion } from 'motion/react';
 import { supabase } from '../supabaseClient';
+import NotesSection from './NotesSection';
 
 export default function ProfilePage() {
-  const { currentUser, orders, loading, logOutUser } = useAuthOrder();
+  const { currentUser, orders, loading, logOutUser, uploadAvatar, deleteAvatar } = useAuthOrder();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -15,6 +16,48 @@ export default function ProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [avatarWorking, setAvatarWorking] = useState(false);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('Image size must be less than 5MB.');
+      return;
+    }
+
+    setAvatarWorking(true);
+    setSuccessMsg('');
+    setErrorMsg('');
+
+    try {
+      await uploadAvatar(file);
+      setSuccessMsg('Profile picture uploaded successfully!');
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Failed to upload profile picture.');
+    } finally {
+      setAvatarWorking(false);
+    }
+  };
+
+  const handleAvatarDelete = async () => {
+    if (!window.confirm('Are you sure you want to remove your profile picture?')) return;
+    setAvatarWorking(true);
+    setSuccessMsg('');
+    setErrorMsg('');
+
+    try {
+      await deleteAvatar();
+      setSuccessMsg('Profile picture removed!');
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Failed to remove profile picture.');
+    } finally {
+      setAvatarWorking(false);
+    }
+  };
 
   React.useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -120,12 +163,50 @@ export default function ProfilePage() {
           {/* Avatar Profile Left Card */}
           <div className="glass-card p-6 flex flex-col items-center text-center h-fit relative">
             <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" />
-            <div className="w-24 h-24 rounded-full bg-zinc-900 border-2 border-brand-primary/20 flex items-center justify-center text-brand-primary mb-4 font-black text-3xl">
-              {currentUser.name.trim().charAt(0).toUpperCase()}
+            
+            <div className="relative group/avatar mb-4">
+              {currentUser.avatarUrl ? (
+                <img 
+                  id="user-avatar-image"
+                  referrerPolicy="no-referrer"
+                  src={currentUser.avatarUrl} 
+                  alt={currentUser.name} 
+                  className={`w-24 h-24 rounded-full object-cover border-2 border-brand-primary/40 ${avatarWorking ? 'animate-pulse opacity-50' : ''}`}
+                />
+              ) : (
+                <div className={`w-24 h-24 rounded-full bg-zinc-900 border-2 border-brand-primary/20 flex items-center justify-center text-brand-primary font-black text-3xl ${avatarWorking ? 'animate-pulse opacity-50' : ''}`}>
+                  {currentUser.name.trim().charAt(0).toUpperCase()}
+                </div>
+              )}
+              
+              <label 
+                id="avatar-upload-trigger"
+                className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover/avatar:opacity-100 flex flex-col items-center justify-center text-[10px] uppercase font-black tracking-widest text-brand-primary cursor-pointer transition-opacity duration-200. select-none"
+              >
+                <span>{avatarWorking ? 'Saving...' : 'Upload'}</span>
+                <input 
+                  id="avatar-file-selector"
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleAvatarUpload}
+                  disabled={avatarWorking}
+                />
+              </label>
             </div>
+
+            {currentUser.avatarUrl && !avatarWorking && (
+              <button
+                id="remove-avatar-trigger"
+                onClick={handleAvatarDelete}
+                className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-500 hover:underline transition-colors mb-3"
+              >
+                Remove Photo
+              </button>
+            )}
             
             <h2 className="text-xl font-bold text-white mb-1">{currentUser.name}</h2>
-            <div className={`px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-zinc-800 text-brand-primary. border border-white/5 mb-6 flex items-center gap-1.5`}>
+            <div className={`px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-widest bg-zinc-800 text-brand-primary border border-white/5 mb-6 flex items-center gap-1.5`}>
               <Shield size={10} className="text-brand-primary" />
               <span>{currentUser.role} Account</span>
             </div>
@@ -306,7 +387,11 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+
           </div>
+
+          {/* Notes Section Integration */}
+          <NotesSection />
         </div>
       </div>
     </div>

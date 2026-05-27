@@ -1,6 +1,7 @@
 import ProductCard from './ProductCard';
-import { PRODUCTS } from '../constants';
 import { Product } from '../types';
+import { useAuthOrder } from '../contexts/AuthOrderContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProductGridProps {
   title: string;
@@ -10,11 +11,11 @@ interface ProductGridProps {
   limit?: number;
 }
 
-import { useLanguage } from '../contexts/LanguageContext';
-
 export default function ProductGrid({ title, subtitle, category, featuredOnly, limit }: ProductGridProps) {
   const { t } = useLanguage();
-  let filteredProducts = PRODUCTS;
+  const { products, loadingProducts } = useAuthOrder();
+  
+  let filteredProducts = products;
   
   if (category) {
     filteredProducts = filteredProducts.filter(p => p.category === category);
@@ -40,11 +41,21 @@ export default function ProductGrid({ title, subtitle, category, featuredOnly, l
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {loadingProducts && filteredProducts.length === 0 ? (
+        <div className="text-center py-12 text-zinc-500 text-xs font-mono">
+          Loading premium catalog...
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div className="text-center py-12 text-zinc-500 text-xs font-mono">
+          No items found in this category.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

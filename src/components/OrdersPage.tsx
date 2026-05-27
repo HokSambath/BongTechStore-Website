@@ -1,13 +1,51 @@
 import { useAuthOrder, Order } from '../contexts/AuthOrderContext';
 import { useNavigate } from 'react-router-dom';
-import { ClipboardList, Clock, CheckCircle, XCircle, ShoppingBag } from 'lucide-react';
+import { ClipboardList, Clock, CheckCircle, XCircle, ShoppingBag, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function OrdersPage() {
-  const { orders, currentUser, loading } = useAuthOrder();
+  const { orders, currentUser, loading, uploadOrderReceipt, deleteOrderReceipt } = useAuthOrder();
   const navigate = useNavigate();
+
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [opStatus, setOpStatus] = useState<string | null>(null);
+
+  const handleReceiptUpload = async (orderId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingId(orderId);
+    setOpStatus('Uploading proof...');
+    try {
+      await uploadOrderReceipt(orderId, file);
+      setOpStatus('Upload complete!');
+      setTimeout(() => setOpStatus(null), 3000);
+    } catch (err: any) {
+      console.error(err);
+      setOpStatus(err.message || 'Upload failed');
+      setTimeout(() => setOpStatus(null), 4000);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  const handleReceiptDelete = async (orderId: string, filePath: string) => {
+    setUploadingId(orderId);
+    setOpStatus('Removing proof...');
+    try {
+      await deleteOrderReceipt(orderId, filePath);
+      setOpStatus('Removed!');
+      setTimeout(() => setOpStatus(null), 3000);
+    } catch (err: any) {
+      console.error(err);
+      setOpStatus(err.message || 'Removal failed');
+      setTimeout(() => setOpStatus(null), 4000);
+    } finally {
+      setUploadingId(null);
+    }
+  };
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -124,6 +162,57 @@ export default function OrdersPage() {
                 <div className="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs text-text-dim">
                   <div>Contact phone: <strong className="text-white">{order.customerPhone.split(' | ')[0]}</strong></div>
                   <div>Delivery Zone: <strong className="text-white">Phnom Penh, Cambodia</strong></div>
+                </div>
+
+                {/* Secure storage receipt proof section */}
+                <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-900/40 p-4 rounded-lg">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary">Payment Receipt Attachment</span>
+                    {uploadingId === order.id ? (
+                      <div className="flex items-center gap-2 text-xs text-brand-primary">
+                        <Loader2 size={12} className="animate-spin text-brand-primary" />
+                        <span>{opStatus || 'Processing...'}</span>
+                      </div>
+                    ) : order.receiptUrl ? (
+                      <div className="flex items-center gap-3">
+                        <a 
+                          id={`view-receipt-${order.id}`}
+                          href={order.receiptUrl} 
+                          target="_blank" 
+                          rel="noreferrer" 
+                          className="text-xs text-white hover:text-brand-primary underline font-bold flex items-center gap-1 transition-colors"
+                        >
+                          View Receipt Image ➔
+                        </a>
+                        <span className="text-text-dim/40 text-xs">|</span>
+                        <button
+                          id={`remove-receipt-${order.id}`}
+                          onClick={() => handleReceiptDelete(order.id, order.receiptPath!)}
+                          className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-500 hover:underline transition-colors p-1"
+                        >
+                          Delete Attachment
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-text-dim">No upload found. Direct Bank transfer or Cash payment.</span>
+                    )}
+                  </div>
+
+                  {uploadingId !== order.id && !order.receiptUrl && (
+                    <label 
+                      id={`upload-receipt-lbl-${order.id}`}
+                      className="cursor-pointer text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-1.5 border border-brand-primary/30 rounded text-brand-primary hover:bg-brand-primary/10 transition-colors"
+                    >
+                      <span>Upload Bank/ABA Receipt</span>
+                      <input 
+                        id={`upload-receipt-file-${order.id}`}
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handleReceiptUpload(order.id, e)}
+                      />
+                    </label>
+                  )}
                 </div>
               </motion.div>
             )
