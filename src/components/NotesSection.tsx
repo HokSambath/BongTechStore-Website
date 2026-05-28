@@ -273,7 +273,15 @@ export default function NotesSection() {
                         </h5>
                         <div className="flex items-center gap-1 bg-zinc-800 px-1.5 py-0.5 rounded text-[9px] text-text-dim font-mono">
                           <Clock size={10} />
-                          <span>{new Date(note.createdAt).toLocaleDateString(undefined, {month: 'numeric', day: 'numeric'})}</span>
+                          <span>
+                            {(() => {
+                              if (!note.createdAt) return 'N/A';
+                              const parsed = new Date(note.createdAt);
+                              return isNaN(parsed.getTime()) 
+                                ? 'N/A' 
+                                : parsed.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
+                            })()}
+                          </span>
                         </div>
                       </div>
                       <p className="text-xs text-text-dim leading-relaxed whitespace-pre-wrap break-words line-clamp-4 pr-1">

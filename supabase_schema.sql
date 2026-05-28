@@ -145,13 +145,13 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow users to read their own orders" ON public.orders;
 CREATE POLICY "Allow users to read their own orders" ON public.orders
     FOR SELECT TO authenticated
-    USING (auth.uid() = customer_id);
+    USING (auth.uid()::text = customer_id::text);
 
 -- Users can place their own orders
 DROP POLICY IF EXISTS "Allow users to create their own orders" ON public.orders;
 CREATE POLICY "Allow users to create their own orders" ON public.orders
     FOR INSERT TO authenticated
-    WITH CHECK (auth.uid() = customer_id);
+    WITH CHECK (auth.uid()::text = customer_id::text);
 
 -- Staff/Admin can view all orders & update status
 DROP POLICY IF EXISTS "Allow admin/staff access to all orders" ON public.orders;
@@ -186,8 +186,8 @@ ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow users full control of their own notes" ON public.notes;
 CREATE POLICY "Allow users full control of their own notes" ON public.notes
     FOR ALL TO authenticated
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
+    USING (auth.uid()::text = user_id::text)
+    WITH CHECK (auth.uid()::text = user_id::text);
 
 
 -- =========================================================================

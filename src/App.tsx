@@ -61,7 +61,7 @@ function HomePage() {
         </div>
         
         <aside className="lg:sticky lg:top-24 h-fit">
-          <BlogSection />
+          <BlogSection isSidebar={true} />
         </aside>
       </main>
 
