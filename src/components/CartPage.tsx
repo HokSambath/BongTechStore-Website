@@ -227,7 +227,7 @@ export default function CartPage() {
                   type="tel" 
                   required
                   disabled={!currentUser}
-                  placeholder="e.g. 070697169" 
+                  placeholder="e.g. 0767676887" 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full bg-bg-card border border-border rounded p-2.5 text-xs text-white focus:border-brand-primary outline-none disabled:opacity-50"

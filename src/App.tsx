@@ -156,7 +156,7 @@ function AboutPage() {
             </div>
             <div className="flex items-center gap-3 text-text-dim">
               <span className="w-8 h-8 rounded bg-bg-card border border-border flex items-center justify-center">📞</span>
-              070 697 169 / 070 555882
+              076 7676 887 / 070 555882
             </div>
           </div>
         </div>

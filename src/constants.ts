@@ -6,7 +6,7 @@ export const BUSINESS_DETAILS = {
   location: 'Phnom Penh, Cambodia',
   facebook: 'https://www.facebook.com/bongtechstore',
   telegram: 'https://t.me/bongtechstore',
-  phone: ['070 697 169', '070 555882'],
+  phone: ['076 7676 887', '070 555882'],
   website: 'www.bongtech.cc',
   logo: logoImage,
   description: 'Bongtech store is your one-stop shop for all your gaming needs. We offer a wide range of controllers, accessories, and more. Shop now!',
