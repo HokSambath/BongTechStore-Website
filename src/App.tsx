@@ -46,23 +46,23 @@ function HomePage() {
       <Hero />
       <Marquee />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-10 py-10 grid grid-cols-1 lg:grid-cols-[1fr_1fr_280px] gap-8">
-        <div className="lg:col-span-2 flex flex-col gap-12">
-          <ProductGrid 
-            title="grid.featured" 
-            subtitle="grid.featured_sub"
-            featuredOnly
-          />
+      <main id="home-main-content" className="max-w-7xl mx-auto px-4 sm:px-10 py-10 flex flex-col gap-16">
+        <div id="home-blog-section-wrapper" className="pt-4">
+          <BlogSection />
+        </div>
+        
+        <div id="home-products-section-wrapper" className="border-t border-white/5 pt-16 flex flex-col gap-12">
           <ProductGrid 
             title="grid.accessories" 
             subtitle="grid.accessories_sub"
             category="Product"
           />
+          <ProductGrid 
+            title="grid.featured" 
+            subtitle="grid.featured_sub"
+            featuredOnly
+          />
         </div>
-        
-        <aside className="lg:sticky lg:top-24 h-fit">
-          <BlogSection isSidebar={true} />
-        </aside>
       </main>
 
       {/* Contact Highlights */}
