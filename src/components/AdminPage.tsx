@@ -56,12 +56,14 @@ export default function AdminPage() {
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [blogTitle, setBlogTitle] = useState('');
   const [blogExcerpt, setBlogExcerpt] = useState('');
+  const [blogContent, setBlogContent] = useState('');
   const [blogCategory, setBlogCategory] = useState('Reviews');
   const [blogImage, setBlogImage] = useState('');
   const [blogVideoUrl, setBlogVideoUrl] = useState('');
   const [blogError, setBlogError] = useState('');
   const [blogSuccess, setBlogSuccess] = useState('');
   const [submittingBlog, setSubmittingBlog] = useState(false);
+  const [blogFormActiveTab, setBlogFormActiveTab] = useState<'write' | 'preview'>('write');
 
   // Lock Admin access to staff & admin only
   useEffect(() => {
@@ -102,7 +104,7 @@ export default function AdminPage() {
       setUpdatingId(orderId);
       await updateOrderStatus(orderId, status);
     } catch (err) {
-      alert('Error updating status: ' + err);
+      console.error('Error updating status:', err);
     } finally {
       setUpdatingId(null);
     }
@@ -142,16 +144,17 @@ export default function AdminPage() {
       const parsedVideo = blogVideoUrl.trim() || undefined;
 
       if (editingPostId) {
-        await updateBlogPost(editingPostId, blogTitle, blogExcerpt, blogCategory, parsedImage, parsedVideo);
+        await updateBlogPost(editingPostId, blogTitle, blogExcerpt, blogCategory, parsedImage, parsedVideo, blogContent || undefined);
         setBlogSuccess('Article updated on the live website!');
       } else {
-        await createBlogPost(blogTitle, blogExcerpt, blogCategory, parsedImage, parsedVideo);
+        await createBlogPost(blogTitle, blogExcerpt, blogCategory, parsedImage, parsedVideo, blogContent || undefined);
         setBlogSuccess('Article published to the Bong Tech Store blog!');
       }
 
       // Reset
       setBlogTitle('');
       setBlogExcerpt('');
+      setBlogContent('');
       setBlogImage('');
       setBlogVideoUrl('');
       setBlogCategory('Reviews');
@@ -167,6 +170,7 @@ export default function AdminPage() {
     setEditingPostId(post.id);
     setBlogTitle(post.title);
     setBlogExcerpt(post.excerpt);
+    setBlogContent(post.content || '');
     setBlogCategory(post.category);
     setBlogImage(post.image || '');
     setBlogVideoUrl(post.videoUrl || '');
@@ -812,137 +816,295 @@ export default function AdminPage() {
             <div id="blog-editor-anchor" className="bg-zinc-900/60 p-8 rounded-2xl border border-white/5 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary" />
               
-              <h3 className="text-sm font-black uppercase tracking-widest text-white mb-6 flex items-center gap-2">
-                <Sparkles size={16} className="text-brand-primary animate-pulse" />
-                {editingPostId ? 'Edit Blog Post' : 'Compose Blog Post'}
-              </h3>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                  <h3 className="text-base font-black uppercase tracking-widest text-white flex items-center gap-2">
+                    <Sparkles size={18} className="text-brand-primary animate-pulse" />
+                    {editingPostId ? 'Edit Blog Article' : 'Compose Blog Article'}
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-1">Publish fully structured tech guides, hardware reviews, and announcements directly to the home screen.</p>
+                </div>
+                
+                {/* Mode Selector Tabs */}
+                <div className="flex border border-white/5 bg-zinc-950 p-1 rounded-lg shrink-0">
+                  <button 
+                    type="button"
+                    onClick={() => setBlogFormActiveTab('write')}
+                    className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      blogFormActiveTab === 'write' 
+                        ? 'bg-brand-primary/10 border border-brand-primary/20 text-brand-primary' 
+                        : 'border border-transparent text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <BookOpen size={13} />
+                    Write Content
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setBlogFormActiveTab('preview')}
+                    className={`px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                      blogFormActiveTab === 'preview' 
+                        ? 'bg-brand-primary/10 border border-brand-primary/20 text-brand-primary' 
+                        : 'border border-transparent text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <Globe size={13} />
+                    Live Reader Preview
+                  </button>
+                </div>
+              </div>
 
               {blogSuccess && (
-                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-6 font-bold">
+                <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded-lg p-3 mb-6 font-bold flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping inline-block" />
                   {blogSuccess}
                 </div>
               )}
 
               {blogError && (
-                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded p-3 mb-6 font-bold">
+                <div className="text-xs text-red-400 border border-red-500/20 bg-red-500/10 rounded-lg p-3 mb-6 font-bold">
                   {blogError}
                 </div>
               )}
 
               <form onSubmit={handleBlogSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {/* Column 1: Title & Category */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Article Title</label>
-                      <input 
-                        type="text"
-                        value={blogTitle}
-                        onChange={(e) => setBlogTitle(e.target.value)}
-                        required
-                        placeholder="e.g. Hands on with the IINE Ananke 2"
-                        className="input-field placeholder:text-zinc-650"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1 flex justify-between">
-                        <span>Category Header</span>
-                        <span className="text-[8px] font-bold text-brand-primary lowercase">or type text directly</span>
-                      </label>
-                      <input 
-                        type="text"
-                        value={blogCategory}
-                        required
-                        onChange={(e) => setBlogCategory(e.target.value)}
-                        placeholder="e.g. Reviews, Tutorials, Tech Guides"
-                        className="input-field placeholder:text-zinc-650"
-                      />
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {['Reviews', 'YouTube', 'Guides', 'Announcements'].map((preset) => (
-                          <button
-                            key={preset}
-                            type="button"
-                            onClick={() => setBlogCategory(preset)}
-                            className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border transition-all ${
-                              blogCategory === preset 
-                                ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
-                                : 'bg-zinc-950 border-white/5 text-zinc-400 hover:border-white/10 hover:text-white'
-                            }`}
-                          >
-                            {preset}
-                          </button>
-                        ))}
+                {blogFormActiveTab === 'write' ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Panel: Crucial Metadata & Media Parameters (lg:col-span-5) */}
+                    <div className="lg:col-span-5 space-y-6 bg-zinc-950/40 p-6 rounded-xl border border-white/5">
+                      <div className="border-b border-white/5 pb-3">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary">1. Metadata & Assets</span>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Column 2: Excerpt Summary */}
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Excerpt Summary</label>
-                      <textarea 
-                        value={blogExcerpt}
-                        onChange={(e) => setBlogExcerpt(e.target.value)}
-                        required
-                        placeholder="An eye-catching 2-3 sentence overview designed to draw reader engagement..."
-                        className="input-field placeholder:text-zinc-650 min-h-[142px] resize-y"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Column 3: Media & Actions */}
-                  <div className="space-y-4 flex flex-col justify-between">
-                    <div className="space-y-4">
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Image URL (Optional)</label>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Article Title</label>
+                        <input 
+                          type="text"
+                          value={blogTitle}
+                          onChange={(e) => setBlogTitle(e.target.value)}
+                          required
+                          placeholder="e.g. Hands on with the IINE Ananke 2 in Phnom Penh"
+                          className="input-field placeholder:text-zinc-600 font-bold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-2 flex justify-between">
+                          <span>Category Header</span>
+                          <span className="text-[8px] font-bold text-brand-primary lowercase">or type text directly</span>
+                        </label>
+                        <input 
+                          type="text"
+                          value={blogCategory}
+                          required
+                          onChange={(e) => setBlogCategory(e.target.value)}
+                          placeholder="e.g. Reviews, Tutorials, Tech Guides"
+                          className="input-field placeholder:text-zinc-600 font-mono text-xs"
+                        />
+                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          {['Reviews', 'YouTube', 'Guides', 'Announcements'].map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => setBlogCategory(preset)}
+                              className={`text-[9px] font-black uppercase px-2.5 py-1 rounded border transition-all ${
+                                blogCategory === preset 
+                                  ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' 
+                                  : 'bg-zinc-950 border-white/5 text-zinc-400 hover:border-white/10 hover:text-white'
+                              }`}
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Cover Image URL</label>
                         <input 
                           type="url"
                           value={blogImage}
                           onChange={(e) => setBlogImage(e.target.value)}
-                          placeholder="e.g. https://picsum.photos/seed/blog/800/400"
-                          className="input-field placeholder:text-zinc-600"
+                          placeholder="e.g. https://images.unsplash.com/photo-xxx (leaves blank for random)"
+                          className="input-field placeholder:text-zinc-600 text-xs"
                         />
+                        {blogImage && (
+                          <div className="mt-2 rounded-lg overflow-hidden border border-white/5 aspect-video relative max-h-36">
+                            <img 
+                              src={blogImage} 
+                              alt="Cover preview" 
+                              className="w-full h-full object-cover" 
+                              referrerPolicy="no-referrer"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/fallback/800/400';
+                              }}
+                            />
+                            <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[8px] font-mono text-zinc-400">
+                              Active Preview
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Embedded YouTube URL (Optional)</label>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Embedded YouTube Video Link (Optional)</label>
                         <input 
                           type="url"
                           value={blogVideoUrl}
                           onChange={(e) => setBlogVideoUrl(e.target.value)}
-                          placeholder="e.g. https://www.youtube.com/embed/TAI_3NY-wNw"
-                          className="input-field placeholder:text-zinc-600"
+                          placeholder="e.g. https://www.youtube.com/embed/dQw4w9WgXcQ"
+                          className="input-field placeholder:text-zinc-650 text-xs font-mono"
                         />
+                        <span className="text-[8px] text-zinc-500 mt-1 block">Ensure the URL uses the /embed/ format (e.g., https://www.youtube.com/embed/...)</span>
                       </div>
                     </div>
 
-                    <div className="pt-2 flex gap-2">
-                      <button
-                        type="submit"
-                        disabled={submittingBlog}
-                        className="btn-primary flex-1 py-2.5 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
-                      >
-                        {submittingBlog ? 'Pending...' : (editingPostId ? 'Update Post' : 'Publish Post')}
-                      </button>
+                    {/* Right Panel: Spacious Rich Excerpt and the Huge Main Body (lg:col-span-7) */}
+                    <div className="lg:col-span-7 space-y-6">
+                      <div className="border-b border-white/5 pb-3 flex justify-between items-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-primary">2. Core Contents Editor</span>
+                        
+                        {/* Live statistics widget */}
+                        <div className="flex gap-4 text-[9px] font-mono text-zinc-400">
+                          <span>Words: <strong className="text-white">{blogContent.split(/\s+/).filter(Boolean).length}</strong></span>
+                          <span>Reading time: <strong className="text-white">{Math.max(1, Math.ceil(blogContent.split(/\s+/).filter(Boolean).length / 180))} min</strong></span>
+                        </div>
+                      </div>
 
-                      {editingPostId && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingPostId(null);
-                            setBlogTitle('');
-                            setBlogExcerpt('');
-                            setBlogCategory('Reviews');
-                            setBlogImage('');
-                            setBlogVideoUrl('');
-                          }}
-                          className="px-3 bg-zinc-800 text-white border border-white/10 hover:bg-zinc-700 font-bold uppercase tracking-widest text-[10px] rounded-lg"
-                        >
-                          Cancel
-                        </button>
+                      <div>
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">Catchy Excerpt Summary (Quick Read Card)</label>
+                        <textarea 
+                          value={blogExcerpt}
+                          onChange={(e) => setBlogExcerpt(e.target.value)}
+                          required
+                          rows={2}
+                          placeholder="An eye-catching 1-2 sentence hook styled on the front cards to draw gaming enthusiast clicks dynamic..."
+                          className="input-field placeholder:text-zinc-650 resize-y text-sm font-medium"
+                        />
+                      </div>
+
+                      <div className="flex flex-col flex-1 h-full min-h-[300px]">
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Main Formatted Body Content</label>
+                          <span className="text-[8px] font-mono text-zinc-500 uppercase">Hit "Enter" between paragraphs. Supports clean formatting.</span>
+                        </div>
+                        <textarea 
+                          value={blogContent}
+                          onChange={(e) => setBlogContent(e.target.value)}
+                          placeholder="Compose your high-quality full review article here...&#10;&#10;Introduce the hardware device or tech updates. Tell your readers what you love, build quality, gaming performances, and prices in local stores.&#10;&#10;Use plain text paragraphs. Each line break forms a beautifully padded paragraph element on readers' mobile and screens!"
+                          className="input-field placeholder:text-zinc-650 flex-1 min-h-[290px] resize-y font-normal leading-relaxed text-sm bg-zinc-950/60 p-5 rounded-xl text-zinc-100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Interactive Previsualization Stage (Reader View Interface) */
+                  <div className="border border-white/5 rounded-2xl bg-zinc-950/80 p-8 space-y-6 max-h-[600px] overflow-y-auto custom-scroll">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-black uppercase tracking-wider bg-brand-primary/10 border border-brand-primary/20 px-2.5 py-1 rounded text-brand-primary">
+                          {blogCategory || 'Technology'}
+                        </span>
+                        <span className="text-xs font-mono text-zinc-500">May 28, 2026</span>
+                      </div>
+                      <div className="text-[10px] font-mono text-zinc-500 flex items-center gap-3">
+                        <span>By Bong Tech Editor</span>
+                        <span>•</span>
+                        <span>{Math.max(1, Math.ceil((blogContent || '').split(/\s+/).filter(Boolean).length / 180))} min read</span>
+                      </div>
+                    </div>
+
+                    <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                      {blogTitle || 'Untitled Blog Post'}
+                    </h1>
+
+                    <p className="text-base text-zinc-300 italic border-l-2 border-brand-primary pl-4 py-1 leading-relaxed">
+                      {blogExcerpt || 'No summary hook provided yet.'}
+                    </p>
+
+                    {/* Preview Cover image */}
+                    {(blogImage || !blogVideoUrl) && (
+                      <div className="rounded-xl overflow-hidden shadow-2xl relative w-full aspect-video md:max-h-80 border border-white/5">
+                        <img 
+                          src={blogImage || 'https://picsum.photos/seed/preview-seed/800/400'} 
+                          alt="Cover Article" 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    )}
+
+                    {/* YouTube Embedded Section */}
+                    {blogVideoUrl && (
+                      <div className="rounded-xl overflow-hidden aspect-video border border-white/5 bg-black">
+                        <iframe 
+                          src={blogVideoUrl} 
+                          title="YouTube review embed video" 
+                          className="w-full h-full"
+                          allowFullScreen
+                        />
+                      </div>
+                    )}
+
+                    {/* Split content display */}
+                    <div className="space-y-4 pt-4 border-t border-white/5 text-zinc-300 text-sm leading-relaxed max-w-none">
+                      {blogContent ? (
+                        blogContent.split('\n').map((p, index) => p.trim() && (
+                          <p key={index} className="text-zinc-300 leading-relaxed font-normal">
+                            {p}
+                          </p>
+                        ))
+                      ) : (
+                        <p className="text-zinc-500 italic">No body content defined yet. Return to "Write Content" tab to begin composing dynamic paragraphs.</p>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Form Action Controls Trigger row */}
+                <div className="flex justify-between items-center pt-6 border-t border-white/5">
+                  <div className="text-[10px] font-mono text-zinc-500">
+                    {editingPostId ? (
+                      <span>Editing internal ID: <code className="text-brand-primary">{editingPostId}</code></span>
+                    ) : (
+                      <span>Ready for live propagation</span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    {editingPostId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingPostId(null);
+                          setBlogTitle('');
+                          setBlogExcerpt('');
+                          setBlogContent('');
+                          setBlogCategory('Reviews');
+                          setBlogImage('');
+                          setBlogVideoUrl('');
+                          setBlogFormActiveTab('write');
+                        }}
+                        className="px-4 py-2 bg-zinc-800 text-zinc-200 border border-white/5 hover:bg-zinc-700/80 font-bold uppercase tracking-widest text-[10px] rounded-lg transition-colors"
+                      >
+                        Cancel Editing
+                      </button>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={submittingBlog}
+                      className="btn-primary py-2.5 px-6 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 relative overflow-hidden"
+                    >
+                      {submittingBlog ? (
+                        <span>Syncing Feed...</span>
+                      ) : (
+                        <>
+                          <Sparkles size={14} className="text-black" />
+                          <span>{editingPostId ? 'Update live feed' : 'Publish to live feed'}</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </form>

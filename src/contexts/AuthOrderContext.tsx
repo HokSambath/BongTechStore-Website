@@ -71,8 +71,8 @@ interface AuthOrderContextType {
   blogPosts: BlogPost[];
   loadingBlog: boolean;
   loadBlogPosts: () => Promise<void>;
-  createBlogPost: (title: string, excerpt: string, category: string, image: string, videoUrl?: string) => Promise<void>;
-  updateBlogPost: (id: string, title: string, excerpt: string, category: string, image: string, videoUrl?: string) => Promise<void>;
+  createBlogPost: (title: string, excerpt: string, category: string, image: string, videoUrl?: string, content?: string) => Promise<void>;
+  updateBlogPost: (id: string, title: string, excerpt: string, category: string, image: string, videoUrl?: string, content?: string) => Promise<void>;
   deleteBlogPost: (id: string) => Promise<void>;
   products: Product[];
   loadingProducts: boolean;
@@ -932,6 +932,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           id: b.id,
           title: b.title,
           excerpt: b.excerpt,
+          content: b.content || undefined,
           date: b.date,
           image: b.image,
           author: b.author,
@@ -963,7 +964,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const createBlogPost = async (title: string, excerpt: string, category: string, image: string, videoUrl?: string) => {
+  const createBlogPost = async (title: string, excerpt: string, category: string, image: string, videoUrl?: string, content?: string) => {
     const authorName = currentUser?.name || 'Bong Tech Author';
     
     if (useBlogLocalFallback) {
@@ -971,6 +972,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         id: Math.random().toString(36).substr(2, 9),
         title: title.trim(),
         excerpt: excerpt.trim(),
+        content: content?.trim() || undefined,
         category: category.trim(),
         image: image.trim(),
         videoUrl: videoUrl?.trim() || undefined,
@@ -988,6 +990,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       .insert({
         title: title.trim(),
         excerpt: excerpt.trim(),
+        content: content?.trim() || null,
         category: category.trim(),
         image: image.trim(),
         video_url: videoUrl?.trim() || null,
@@ -1005,6 +1008,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           id: Math.random().toString(36).substr(2, 9),
           title: title.trim(),
           excerpt: excerpt.trim(),
+          content: content?.trim() || undefined,
           category: category.trim(),
           image: image.trim(),
           videoUrl: videoUrl?.trim() || undefined,
@@ -1024,6 +1028,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         id: data.id,
         title: data.title,
         excerpt: data.excerpt,
+        content: data.content || undefined,
         category: data.category,
         image: data.image,
         videoUrl: data.video_url || undefined,
@@ -1034,12 +1039,13 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  const updateBlogPost = async (id: string, title: string, excerpt: string, category: string, image: string, videoUrl?: string) => {
+  const updateBlogPost = async (id: string, title: string, excerpt: string, category: string, image: string, videoUrl?: string, content?: string) => {
     if (useBlogLocalFallback) {
       const updated = blogPosts.map(p => p.id === id ? {
         ...p,
         title: title.trim(),
         excerpt: excerpt.trim(),
+        content: content?.trim() || undefined,
         category: category.trim(),
         image: image.trim(),
         videoUrl: videoUrl?.trim() || undefined
@@ -1054,6 +1060,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       .update({
         title: title.trim(),
         excerpt: excerpt.trim(),
+        content: content?.trim() || null,
         category: category.trim(),
         image: image.trim(),
         video_url: videoUrl?.trim() || null
@@ -1069,6 +1076,7 @@ export const AuthOrderProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ...p,
         title: data.title,
         excerpt: data.excerpt,
+        content: data.content || undefined,
         category: data.category,
         image: data.image,
         videoUrl: data.video_url || undefined

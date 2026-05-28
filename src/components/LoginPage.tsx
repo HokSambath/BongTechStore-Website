@@ -180,18 +180,6 @@ export default function LoginPage() {
           {isSignUp ? 'Create your user account to track pending orders and save delivery parameters.' : 'Log in to checkout and review order statuses.'}
         </p>
 
-        {/* Database Engine Notification */}
-        <div className="p-3 rounded bg-white/5 border border-white/10 flex items-start gap-2 text-[10px] text-text-dim mb-6 leading-relaxed">
-          <Info size={14} className="text-brand-primary mt-0.5 shrink-0" />
-          <div>
-            {isFirebaseActive ? (
-              <span>⚡ <strong className="text-white">Cloud Database Sync Active:</strong> Authenticated accounts sync in real-time.</span>
-            ) : (
-              <span>📂 <strong className="text-white">Sandbox Local Storage Mode:</strong> Standard email registration will persist cleanly in this browser’s memory for full trial.</span>
-            )}
-          </div>
-        </div>
-
         {/* Form Notifications & Feedback coordinates located above the form */}
         {successMsg && (
           <div className="text-xs text-green-400 border border-green-500/20 bg-green-500/10 rounded p-3 mb-6 font-bold">

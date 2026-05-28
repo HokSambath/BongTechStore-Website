@@ -35,6 +35,7 @@ export default function NotesSection() {
   
   // Modal state for Upgrade to Pro alert
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
   // Triggered when form is submitted (handles both edit and insert)
   const handleSubmit = async (e: React.FormEvent) => {
@@ -379,17 +380,26 @@ export default function NotesSection() {
 
                 {/* CTA Buttons */}
                 <div className="w-full space-y-3">
-                  <button 
-                    id="upgrade-submit-draft"
-                    onClick={() => {
-                      alert('Thank you for your interest! Pro upgrades are coming soon in our upcoming release cycle.');
-                      setShowUpgradeModal(false);
-                    }}
-                    className="btn-primary w-full py-3 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
-                  >
-                    <span>Upgrade to Pro Now</span>
-                    <ArrowRight size={14} />
-                  </button>
+                  {upgradeSuccess ? (
+                    <div className="text-center p-3 rounded-xl border border-brand-primary/20 bg-brand-primary/10 text-brand-primary text-xs font-bold leading-relaxed animate-pulse">
+                      ✓ Request registered! Pro upgrades are launching in our next software release cycle.
+                    </div>
+                  ) : (
+                    <button 
+                      id="upgrade-submit-draft"
+                      onClick={() => {
+                        setUpgradeSuccess(true);
+                        setTimeout(() => {
+                          setShowUpgradeModal(false);
+                          setUpgradeSuccess(false);
+                        }, 4000);
+                      }}
+                      className="btn-primary w-full py-3 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                    >
+                      <span>Upgrade to Pro Now</span>
+                      <ArrowRight size={14} />
+                    </button>
+                  )}
                   
                   <button 
                     id="upgrade-cancel-btn"

@@ -120,6 +120,18 @@ const ARTICLE_DETAILS: Record<string, { readTime: string; likes: number; views: 
 
 // Generates readable content paragraphs dynamically to support newly created custom blog posts
 const getArticleParagraphs = (post: BlogPost, lang: 'en' | 'km') => {
+  if (post.content) {
+    const paragraphs = post.content.split('\n').map(p => p.trim()).filter(Boolean);
+    const wordCount = post.content.split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.ceil(wordCount / 180));
+    return {
+      paragraphs,
+      readTime: `${minutes} min read`,
+      likes: 64,
+      views: 240
+    };
+  }
+
   const custom = ARTICLE_DETAILS[post.id];
   if (custom) {
     return {
@@ -164,6 +176,7 @@ export default function BlogSection({ isSidebar = false }: BlogSectionProps) {
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [copied, setCopied] = useState<boolean>(false);
 
   // Filter labels
   const categoriesList = ['All', 'Reviews', 'Guides', 'YouTube', 'Product'];
@@ -498,12 +511,18 @@ export default function BlogSection({ isSidebar = false }: BlogSectionProps) {
                 <button 
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert('Article link copied to clipboard!');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="p-2 hover:bg-white/10 text-text-dim hover:text-white rounded-lg transition-colors border border-white/5"
+                  className={`p-2 rounded-lg transition-all border flex items-center gap-1 min-w-[34px] ${
+                    copied 
+                      ? 'bg-green-500/10 border-green-500/30 text-green-400' 
+                      : 'hover:bg-white/10 text-text-dim hover:text-white border-white/5'
+                  }`}
                   title="Share Article"
                 >
                   <Share2 size={14} />
+                  {copied && <span className="text-[10px] font-black uppercase tracking-wider pl-0.5">Link Copied</span>}
                 </button>
                 <button 
                   onClick={() => {

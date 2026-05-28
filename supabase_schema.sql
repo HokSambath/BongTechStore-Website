@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
     id text DEFAULT gen_random_uuid()::text PRIMARY KEY,
     title text NOT NULL,
     excerpt text NOT NULL,
+    content text,
     date text DEFAULT to_char(now(), 'Mon DD, YYYY') NOT NULL,
     image text NOT NULL,
     author text NOT NULL DEFAULT 'Bong Tech Staff',
@@ -95,6 +96,9 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
     video_url text,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Safe Migration: Ensure content column is present on existing tables too!
+ALTER TABLE public.blog_posts ADD COLUMN IF NOT EXISTS content text;
 
 -- Enable RLS for Blog Posts
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
