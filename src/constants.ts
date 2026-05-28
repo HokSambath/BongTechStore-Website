@@ -1,4 +1,5 @@
 import { Product, BlogPost } from './types';
+import logoImage from './assets/images/bongtech_logo_1779972779282.png';
 
 export const BUSINESS_DETAILS = {
   name: 'Bong Tech Store',
@@ -7,7 +8,7 @@ export const BUSINESS_DETAILS = {
   telegram: 'https://t.me/bongtechstore',
   phone: ['070 697 169', '070 555882'],
   website: 'www.bongtech.cc',
-  logo: 'https://ievobrdqmcemaetwrqtc.supabase.co/storage/v1/object/sign/Internal%20file/BongTech_logo.png',
+  logo: logoImage,
   description: 'Bongtech store is your one-stop shop for all your gaming needs. We offer a wide range of controllers, accessories, and more. Shop now!',
 };
 

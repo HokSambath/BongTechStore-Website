@@ -42,15 +42,42 @@ export default function ProductGrid({ title, subtitle, category, featuredOnly, l
       </div>
 
       {loadingProducts && filteredProducts.length === 0 ? (
-        <div className="text-center py-12 text-zinc-500 text-xs font-mono">
-          Loading premium catalog...
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="glass-card animate-pulse overflow-hidden !p-0 flex flex-col justify-between h-[450px] border border-white/5 bg-bg-card/30">
+              <div>
+                <div className="relative aspect-square bg-zinc-900 border-b border-border/50" />
+                <div className="p-6 flex flex-col gap-4">
+                  <div className="h-4 bg-zinc-800 rounded w-3/4" />
+                  <div className="h-3 bg-zinc-800 rounded w-1/2" />
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="space-y-2">
+                      <div className="h-1.5 bg-zinc-800 rounded w-1/2" />
+                      <div className="h-2.5 bg-zinc-800/80 rounded w-3/4" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-1.5 bg-zinc-800 rounded w-1/2" />
+                      <div className="h-2.5 bg-zinc-800/80 rounded w-3/4" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 pt-0 flex justify-between items-center pb-6">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-zinc-800" />
+                  <div className="w-3 h-3 rounded-full bg-zinc-800" />
+                </div>
+                <div className="h-8 bg-zinc-800 rounded-lg w-24" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="text-center py-12 text-zinc-500 text-xs font-mono">
           No items found in this category.
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
