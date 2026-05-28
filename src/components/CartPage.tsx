@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuthOrder } from '../contexts/AuthOrderContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useState } from 'react';
-import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, ClipboardList } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, ClipboardList, Send } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 
@@ -63,20 +63,38 @@ export default function CartPage() {
             <ShoppingBag size={30} />
           </div>
           <h2 className="text-3xl font-bold mb-4 text-gradient">Order Placed Successfully!</h2>
-          <p className="text-text-dim mb-8">
+          <p className="text-text-dim mb-6">
             Thank you for shopping at Bong Tech Store. Our team will review your order shortly and contact you at <strong className="text-white">{phone}</strong> to confirm delivery in Phnom Penh.
           </p>
+
+          {/* Telegram Immediate Follow-up Action */}
+          <div className="mb-8 p-4 bg-[#0088cc]/10 border border-[#0088cc]/25 rounded-xl text-center">
+            <p className="text-xs text-[#0088cc] font-black uppercase tracking-wider mb-2">⚡ Speed Up Confirmation</p>
+            <p className="text-[11px] text-text-dim mb-4 leading-relaxed">
+              Have questions or want to confirm your order immediately? Chat with our staff directly on Telegram now!
+            </p>
+            <a 
+              href="https://t.me/hoksambath"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-2 bg-[#0088cc] hover:bg-[#0088cc]/90 text-white font-bold py-3 px-6 rounded-lg transition-transform hover:scale-[1.02] text-xs uppercase tracking-widest cursor-pointer shadow-md"
+            >
+              <Send size={14} className="animate-bounce" />
+              Chat on Telegram
+            </a>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               onClick={() => navigate('/orders')}
-              className="btn-primary flex items-center gap-2 justify-center"
+              className="btn-primary flex items-center gap-2 justify-center py-2.5 text-xs font-bold uppercase tracking-wide"
             >
-              <ClipboardList size={16} />
+              <ClipboardList size={14} />
               View My Orders
             </button>
             <button 
               onClick={() => navigate('/product')}
-              className="btn-outline justify-center"
+              className="btn-outline justify-center py-2.5 text-xs font-bold uppercase tracking-wide"
             >
               Continue Shopping
             </button>
